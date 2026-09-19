@@ -14,11 +14,11 @@ import type { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
 const NAV = [
-  { to: "/dashboard", label: "Overview", icon: LayoutDashboard, code: "01" },
-  { to: "/captures", label: "Captures", icon: ScanSearch, code: "02" },
-  { to: "/findings", label: "Findings", icon: FileWarning, code: "03" },
-  { to: "/reports", label: "Reports", icon: FileText, code: "04" },
-  { to: "/test-lab", label: "Test Lab", icon: FlaskConical, code: "05" },
+  { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { to: "/captures", label: "Captures", icon: ScanSearch },
+  { to: "/findings", label: "Findings", icon: FileWarning },
+  { to: "/reports", label: "Reports", icon: FileText },
+  { to: "/test-lab", label: "Test Lab", icon: FlaskConical },
 ];
 
 /**
@@ -80,14 +80,6 @@ export function AppShell({
                     active ? "opacity-100" : "opacity-0",
                   )}
                 />
-                <span
-                  className={cn(
-                    "sms-mono w-4 shrink-0 text-[10px] tabular-nums transition-colors",
-                    active ? "text-primary/90" : "text-muted-foreground/50",
-                  )}
-                >
-                  {item.code}
-                </span>
                 <item.icon
                   className={cn(
                     "size-3.5 shrink-0 transition-colors",
