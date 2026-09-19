@@ -98,7 +98,7 @@ export function AppShell({
         <div className="border-border/70 border-t p-3">
           <div className="sms-label text-muted-foreground">Operator</div>
           <div className="sms-mono mt-1 truncate text-xs" title={user?.email ?? user?.name ?? ""}>
-            {user?.email ?? user?.name ?? "analyst"}
+            {user?.email ?? user?.name ?? "Analyst"}
           </div>
           <Button
             variant="outline"
