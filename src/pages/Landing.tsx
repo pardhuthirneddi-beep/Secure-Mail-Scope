@@ -1,66 +1,83 @@
 import { motion } from "framer-motion";
 import {
   ArrowRight,
-  FileSearch,
-  FlaskConical,
-  GitBranch,
-  Layers,
   Lock,
   ShieldCheck,
-  ScanSearch,
-  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "react-router";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 12 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-80px" },
-  transition: { duration: 0.5, ease: "easeOut" as const },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.45, ease: "easeOut" as const },
 };
 
 const PIPELINE = [
-  { icon: FileSearch, label: "PCAP ingested" },
-  { icon: ScanSearch, label: "Sessions reconstructed" },
-  { icon: GitBranch, label: "STARTTLS traced" },
-  { icon: Lock, label: "TLS + certificates extracted" },
-  { icon: Layers, label: "Deterministic rules" },
-  { icon: ShieldCheck, label: "Evidence-linked report" },
+  {
+    n: "01",
+    title: "Ingest",
+    body: "PCAP or PCAPNG, parsed in the browser. Link layers, VLANs, IPv4/IPv6 and TCP reassembly handled without uploading a byte.",
+  },
+  {
+    n: "02",
+    title: "Reconstruct",
+    body: "Flows are reassembled into sessions and classified as SMTP, IMAP or POP3 from observed banners and command grammar.",
+  },
+  {
+    n: "03",
+    title: "Trace upgrades",
+    body: "Every STARTTLS/STLS exchange is tracked: advertised, requested, accepted, or silently absent.",
+  },
+  {
+    n: "04",
+    title: "Extract",
+    body: "TLS versions, cipher suites, key exchange, forward secrecy and full X.509 certificate fields are read from handshake bytes.",
+  },
+  {
+    n: "05",
+    title: "Assess",
+    body: "A published rule set proves weaknesses deterministically; an isolation-forest model and logistic classifier prioritize them.",
+  },
+  {
+    n: "06",
+    title: "Report",
+    body: "Session risk rationale, prioritized remediation, and a JSON evidence bundle — every claim traceable to the capture.",
+  },
 ];
 
 const CAPABILITIES = [
   {
-    icon: Lock,
-    title: "TLS and cipher analysis from observed handshakes",
-    body: "Reconstructs SMTP, IMAP and POP3 sessions, tracks every STARTTLS transition, and extracts negotiated TLS versions, cipher suites, key exchange and forward-secrecy properties directly from handshake bytes.",
+    k: "TLS",
+    title: "Handshake-level TLS analysis",
+    body: "Negotiated version, suite, key exchange and forward secrecy are read from the handshake itself — including ClientHello offers versus ServerHello reality, which exposes downgrade behavior no configuration scan can see.",
   },
   {
-    icon: ShieldCheck,
-    title: "Certificate evidence, not assumptions",
-    body: "Parses presented X.509 certificates for subject, issuer, validity window, signature algorithm and key size, and flags expired, self-signed or weak-key certificates with the exact evidence that proves each finding.",
+    k: "CERT",
+    title: "Certificate evidence, parsed",
+    body: "Subject, issuer, SAN entries, validity window, signature algorithm and key size extracted from presented X.509 bytes. Expired, self-signed and weak-key certificates are flagged with the proof attached.",
   },
   {
-    icon: Layers,
-    title: "Deterministic rules where facts are provable",
-    body: "Deprecated protocol versions, broken ciphers and failed TLS upgrades are proven by packet evidence, not inferred. The rule set is published: every finding cites the rule ID and the observed bytes behind it.",
+    k: "STARTTLS",
+    title: "Upgrade-path integrity",
+    body: "Advertised capability, client requests and TLS establishment are correlated per session. Failed upgrades and plaintext fallback are proven from the command stream, not inferred from ports.",
   },
   {
-    icon: FlaskConical,
-    title: "Machine learning only where it adds value",
-    body: "A logistic risk classifier and an isolation-forest anomaly model prioritize findings and surface unusual handshake shapes. Their output is always labeled AI-assessed and never overrules deterministic evidence.",
+    k: "RULES",
+    title: "Deterministic, published rules",
+    body: "Nine rule IDs with declared evidence requirements, severities and limitations. A finding is a proof with a citation — never a statistical guess dressed as certainty.",
   },
   {
-    icon: FileText,
-    title: "Reports your team can act on",
-    body: "Every capture produces a posture report with prioritized remediation, session risk rationale, and a JSON evidence bundle — each claim traceable back to the capture it came from.",
+    k: "ML",
+    title: "Machine learning, bounded",
+    body: "Risk classification and anomaly detection prioritize what matters across the capture population. Output is always labeled AI-assessed and can never overrule deterministic evidence.",
   },
   {
-    icon: ScanSearch,
-    title: "Passive by design",
-    body: "Nothing is intercepted, decrypted or sent to a third party. Analysis runs in your browser on the capture you supply, encrypted content stays encrypted, and every limitation is stated in the report.",
+    k: "PASSIVE",
+    title: "Passive by construction",
+    body: "Nothing is intercepted, decrypted or exfiltrated. Analysis runs on your machine against the capture you supply, and every limitation of passive evidence is stated where it applies.",
   },
 ];
 
@@ -69,25 +86,25 @@ export default function Landing() {
 
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col">
-      <header className="border-border/70 sticky top-0 z-20 border-b backdrop-blur">
+      <header className="border-border/70 bg-background/95 sticky top-0 z-20 border-b">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="bg-primary/15 flex size-7 items-center justify-center rounded-sm">
-              <ShieldCheck className="text-primary size-4" />
+            <div className="border-primary/40 bg-primary/10 text-primary flex size-7 items-center justify-center rounded-sm border">
+              <ShieldCheck className="size-4" />
             </div>
             <div className="leading-tight">
               <div className="text-[13px] font-semibold tracking-tight">Secure Mail Analysis</div>
-              <div className="text-muted-foreground hidden text-[10px] sm:block">
-                Cryptographic security posture assessment
+              <div className="sms-mono text-muted-foreground text-[10px]">
+                cryptographic posture assessment
               </div>
             </div>
           </Link>
-          <nav className="flex items-center gap-1.5">
-            <Button asChild variant="ghost" size="sm" className="text-xs">
-              <a href="#capabilities">Capabilities</a>
-            </Button>
+          <nav className="flex items-center gap-1">
             <Button asChild variant="ghost" size="sm" className="text-xs">
               <a href="#method">Method</a>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="text-xs">
+              <a href="#capabilities">Capabilities</a>
             </Button>
             <Button asChild size="sm" className="ml-1 gap-1.5 text-xs">
               <Link to={isAuthenticated ? "/dashboard" : "/auth"}>
@@ -103,16 +120,13 @@ export default function Landing() {
         {/* Hero */}
         <section className="sms-grid-bg border-border/70 border-b">
           <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:py-28">
-            <motion.div {...fadeUp}>
-              <Badge variant="outline" className="sms-mono gap-1.5 rounded-sm px-2 py-1 text-[10px] uppercase tracking-wider">
-                <span className="bg-[--sms-healthy] size-1.5 rounded-full" />
-                Passive capture analysis · Evidence-driven
-              </Badge>
-            </motion.div>
+            <motion.p {...fadeUp} className="sms-label text-primary">
+              Passive capture analysis · evidence-driven
+            </motion.p>
             <motion.h1
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.05 }}
-              className="mt-5 max-w-3xl text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl"
+              className="mt-4 max-w-2xl text-3xl leading-[1.15] font-bold tracking-tight sm:text-[2.6rem]"
             >
               Know exactly how your email was protected.
               <span className="text-primary block">Prove it from the packets.</span>
@@ -120,13 +134,12 @@ export default function Landing() {
             <motion.p
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.1 }}
-              className="text-muted-foreground mt-5 max-w-2xl text-base leading-relaxed sm:text-lg"
+              className="text-muted-foreground mt-5 max-w-2xl text-[15px] leading-relaxed"
             >
-              Secure Mail Analysis turns captured email traffic into an evidence-linked
-              cryptographic posture assessment. Upload a PCAP and the workstation reconstructs every
-              mail session, traces each STARTTLS transition, extracts TLS versions, cipher suites
-              and certificates, and reports what was protected, what was exposed, and what to fix
-              first — with every finding traceable to packet evidence.
+              Secure Mail Analysis reconstructs email sessions from a captured PCAP, traces every
+              STARTTLS transition, extracts TLS versions, cipher suites and certificates, and
+              reports what was protected, what was exposed, and what to fix first. Every finding
+              cites the packet evidence that proves it — nothing is inferred beyond the capture.
             </motion.p>
             <motion.div
               {...fadeUp}
@@ -139,115 +152,135 @@ export default function Landing() {
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="gap-2">
-                <a href="#method">
-                  How the analysis works
-                </a>
+              <Button asChild size="lg" variant="outline">
+                <a href="#method">How the analysis works</a>
               </Button>
             </motion.div>
 
+            {/* Terminal-style sample of real output */}
             <motion.div
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.2 }}
-              className="border-border/70 bg-card/50 mt-12 overflow-hidden rounded-md border"
+              className="border-border/80 bg-card/50 mt-14 rounded-sm border"
             >
-              <div className="border-border/70 bg-card/70 flex items-center gap-1.5 border-b px-3 py-2">
-                <span className="size-2 rounded-full bg-[--sms-critical]/60" />
-                <span className="size-2 rounded-full bg-[--sms-medium]/60" />
-                <span className="size-2 rounded-full bg-[--sms-healthy]/60" />
-                <span className="sms-mono text-muted-foreground ml-2 text-[10px]">
-                  mixed-enterprise.pcap — 4 sessions
+              <div className="border-border/80 bg-muted/30 flex items-center justify-between border-b px-3.5 py-2">
+                <span className="sms-mono text-muted-foreground text-[11px]">
+                  mixed-enterprise.pcap
+                </span>
+                <span className="sms-mono text-muted-foreground/70 text-[10px]">
+                  4 sessions · 9 evidence items · 3 findings
                 </span>
               </div>
-              <div className="sms-mono space-y-1.5 p-4 text-[11px] leading-relaxed">
-                <div>
-                  <span className="text-[--sms-healthy]">S-001</span>
-                  <span className="text-muted-foreground"> SMTP 587 · STARTTLS → TLS 1.3</span>
-                  <span className="text-muted-foreground"> · TLS_AES_256_GCM_SHA384 · risk </span>
-                  <span className="text-[--sms-healthy]">HEALTHY</span>
+              <div className="sms-mono divide-border/50 divide-y text-[11px] leading-relaxed">
+                <div className="flex items-center gap-3 px-3.5 py-2.5">
+                  <span className="bg-[--sms-healthy] size-1.5 shrink-0 rounded-[1px]" />
+                  <span className="w-12 shrink-0 font-semibold">S-001</span>
+                  <span className="text-muted-foreground min-w-0 truncate">
+                    SMTP 587 · STARTTLS → TLS 1.3 · TLS_AES_256_GCM_SHA384 · valid certificate
+                  </span>
+                  <span className="text-[--sms-healthy] ml-auto shrink-0 text-[10px] tracking-[0.08em]">
+                    HEALTHY
+                  </span>
                 </div>
-                <div>
-                  <span className="text-[--sms-medium]">S-002</span>
-                  <span className="text-muted-foreground"> SMTP 465 · implicit TLS 1.2</span>
-                  <span className="text-muted-foreground"> · certificate expired 2026-08-12 · risk </span>
-                  <span className="text-[--sms-medium]">HIGH</span>
+                <div className="flex items-center gap-3 px-3.5 py-2.5">
+                  <span className="bg-[--sms-high] size-1.5 shrink-0 rounded-[1px]" />
+                  <span className="w-12 shrink-0 font-semibold">S-002</span>
+                  <span className="text-muted-foreground min-w-0 truncate">
+                    SMTP 465 · implicit TLS 1.2 · certificate expired 2026-08-12
+                  </span>
+                  <span className="text-[--sms-high] ml-auto shrink-0 text-[10px] tracking-[0.08em]">
+                    HIGH
+                  </span>
                 </div>
-                <div>
-                  <span className="text-[--sms-critical]">S-004</span>
-                  <span className="text-muted-foreground"> POP3 110 · no TLS record layer</span>
-                  <span className="text-muted-foreground"> · credentials observed in cleartext · risk </span>
-                  <span className="text-[--sms-critical]">CRITICAL</span>
+                <div className="flex items-center gap-3 px-3.5 py-2.5">
+                  <span className="bg-[--sms-critical] size-1.5 shrink-0 rounded-[1px]" />
+                  <span className="w-12 shrink-0 font-semibold">S-004</span>
+                  <span className="text-muted-foreground min-w-0 truncate">
+                    POP3 110 · no TLS record layer · credentials observed in cleartext
+                  </span>
+                  <span className="text-[--sms-critical] ml-auto shrink-0 text-[10px] tracking-[0.08em]">
+                    CRITICAL
+                  </span>
                 </div>
-                <div className="text-muted-foreground pt-1">
-                  9 evidence items · 3 deterministic findings · 1 prioritized remediation
-                </div>
+              </div>
+              <div className="border-border/80 text-muted-foreground border-t px-3.5 py-2">
+                <span className="sms-label">Output</span>{" "}
+                <span className="sms-mono ml-2 text-[11px]">
+                  posture report · prioritized remediation · JSON evidence bundle
+                </span>
+              </div>
+              {/* footer strip intentionally plain — output example, not decoration */}
+              <div className="sms-mono text-muted-foreground/50 border-t border-border/60 px-3.5 py-1.5 text-[9px] uppercase tracking-[0.14em]">
+                illustrative output — generated by the production pipeline from demo captures
               </div>
             </motion.div>
           </div>
         </section>
 
-        {/* Pipeline */}
+        {/* Method */}
         <section id="method" className="border-border/70 border-b">
           <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-20">
-            <motion.h2 {...fadeUp} className="text-2xl font-bold tracking-tight sm:text-3xl">
-              From capture to conclusion, without invention
-            </motion.h2>
-            <motion.p {...fadeUp} className="text-muted-foreground mt-3 max-w-2xl">
-              Four layers keep the analysis honest: observed evidence, deterministic analysis,
-              machine learning for prioritization only, and plain-language explanation. Conclusions
-              never outrun their evidence.
-            </motion.p>
-            <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {PIPELINE.map((step, i) => (
-                <motion.div
-                  key={step.label}
+            <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+              <div>
+                <motion.p {...fadeUp} className="sms-label text-primary">
+                  Method
+                </motion.p>
+                <motion.h2
                   {...fadeUp}
-                  transition={{ ...fadeUp.transition, delay: 0.05 * i }}
-                  className="border-border/70 bg-card/40 flex items-start gap-3 rounded-md border px-4 py-3.5"
+                  className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl"
                 >
-                  <span className="sms-mono text-muted-foreground mt-0.5 text-xs">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <step.icon className="text-primary mb-1.5 size-4" />
-                    <div className="text-sm font-medium">{step.label}</div>
-                  </div>
-                </motion.div>
-              ))}
+                  From capture to conclusion, without invention
+                </motion.h2>
+                <motion.p {...fadeUp} className="text-muted-foreground mt-4 text-sm leading-relaxed">
+                  Four layers keep the analysis honest. Facts come from observed evidence.
+                  Weaknesses are proven deterministically. Machine learning only prioritizes. And
+                  every conclusion is written so an analyst can trace it back to the packets.
+                </motion.p>
+              </div>
+              <div className="grid gap-x-8 sm:grid-cols-2">
+                {PIPELINE.map((step, i) => (
+                  <motion.div
+                    key={step.n}
+                    {...fadeUp}
+                    transition={{ ...fadeUp.transition, delay: 0.04 * i }}
+                    className="border-border/70 border-b py-4"
+                  >
+                    <div className="flex items-baseline gap-2.5">
+                      <span className="sms-mono text-primary/80 text-[11px]">{step.n}</span>
+                      <h3 className="text-sm font-semibold">{step.title}</h3>
+                    </div>
+                    <p className="text-muted-foreground mt-1.5 pl-6 text-xs leading-relaxed">
+                      {step.body}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
+
+            {/* Four layers */}
             <motion.div
               {...fadeUp}
-              className="border-border/70 bg-card/40 mt-6 rounded-md border p-5"
+              className="border-border/80 bg-card/40 mt-10 grid gap-6 rounded-sm border p-5 sm:grid-cols-3"
             >
-              <div className="grid gap-4 text-sm sm:grid-cols-3">
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[--sms-healthy]">
-                    Layer A — Evidence
-                  </div>
-                  <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
-                    What was actually observed: endpoints, ports, commands, handshake fields,
-                    certificate bytes. Labeled verified when read directly from the capture.
-                  </p>
+              {[
+                {
+                  t: "Layer A — Evidence",
+                  d: "What was actually observed: endpoints, ports, commands, handshake fields, certificate bytes. Labeled verified when read directly from the capture.",
+                },
+                {
+                  t: "Layer B — Deterministic",
+                  d: "What can be proven: obsolete TLS, weak ciphers, expired certificates, failed upgrades. Published rules; no statistical guesswork.",
+                },
+                {
+                  t: "Layer C — AI, bounded",
+                  d: "Risk classification and anomaly detection over the evidence. Always labeled AI-assessed; never allowed to invent facts or overrule the packets.",
+                },
+              ].map((l) => (
+                <div key={l.t}>
+                  <div className="sms-label text-primary/80">{l.t}</div>
+                  <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{l.d}</p>
                 </div>
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[--sms-medium]">
-                    Layer B — Deterministic analysis
-                  </div>
-                  <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
-                    What can be proven: obsolete TLS, weak ciphers, expired certificates, failed
-                    upgrades. Published rule set, no statistical guesswork.
-                  </p>
-                </div>
-                <div>
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-[--sms-low]">
-                    Layer C — AI/ML, bounded
-                  </div>
-                  <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
-                    Risk classification and anomaly detection over the evidence. Always labeled
-                    AI-assessed, never allowed to invent facts or overrule what the packets show.
-                  </p>
-                </div>
-              </div>
+              ))}
             </motion.div>
           </div>
         </section>
@@ -255,21 +288,27 @@ export default function Landing() {
         {/* Capabilities */}
         <section id="capabilities" className="border-border/70 border-b">
           <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-20">
-            <motion.h2 {...fadeUp} className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Built for evidence-driven security teams
+            <motion.p {...fadeUp} className="sms-label text-primary">
+              Capabilities
+            </motion.p>
+            <motion.h2 {...fadeUp} className="mt-3 max-w-xl text-2xl font-bold tracking-tight sm:text-3xl">
+              Built for teams that must show their work
             </motion.h2>
-            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-border/70 bg-border/60 md:grid-cols-2 lg:grid-cols-3">
               {CAPABILITIES.map((cap, i) => (
                 <motion.div
-                  key={cap.title}
+                  key={cap.k}
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.04 * i }}
-                  className="border-border/70 bg-card/40 hover:border-primary/40 group rounded-md border px-5 py-5 transition-colors"
+                  className="bg-background hover:bg-accent/30 group p-5 transition-colors"
                 >
-                  <div className="bg-primary/10 text-primary mb-4 inline-flex size-9 items-center justify-center rounded-sm">
-                    <cap.icon className="size-4.5" />
+                  <div className="flex items-center justify-between">
+                    <span className="sms-mono text-muted-foreground/70 text-[10px] tracking-[0.14em]">
+                      {cap.k}
+                    </span>
+                    <Lock className="text-muted-foreground/30 group-hover:text-primary size-3.5 transition-colors" />
                   </div>
-                  <h3 className="text-sm leading-snug font-semibold">{cap.title}</h3>
+                  <h3 className="mt-3 text-sm leading-snug font-semibold">{cap.title}</h3>
                   <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{cap.body}</p>
                 </motion.div>
               ))}
@@ -278,36 +317,39 @@ export default function Landing() {
         </section>
 
         {/* CTA */}
-        <section>
-          <div className="sms-grid-bg">
-            <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center sm:py-20">
-              <motion.h2 {...fadeUp} className="text-2xl font-bold tracking-tight sm:text-3xl">
-                Bring a capture. Leave with a posture report.
-              </motion.h2>
-              <motion.p {...fadeUp} className="text-muted-foreground mx-auto mt-3 max-w-xl">
-                The workstation runs the full pipeline in your browser — upload a PCAP, investigate
-                every session, and export a remediation report with evidence attached.
-              </motion.p>
-              <motion.div {...fadeUp} className="mt-7 flex justify-center">
-                <Button asChild size="lg" className="gap-2">
-                  <Link to={isAuthenticated ? "/dashboard" : "/auth"}>
-                    Open the workstation
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-              </motion.div>
-            </div>
+        <section className="sms-grid-bg">
+          <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center sm:py-20">
+            <motion.p {...fadeUp} className="sms-label text-primary">
+              Get started
+            </motion.p>
+            <motion.h2 {...fadeUp} className="mx-auto mt-3 max-w-xl text-2xl font-bold tracking-tight sm:text-3xl">
+              Bring a capture. Leave with a posture report.
+            </motion.h2>
+            <motion.p {...fadeUp} className="text-muted-foreground mx-auto mt-3 max-w-lg text-sm">
+              The workstation runs the full pipeline in your browser — upload a PCAP, investigate
+              every session, and export a remediation report with evidence attached.
+            </motion.p>
+            <motion.div {...fadeUp} className="mt-7 flex justify-center">
+              <Button asChild size="lg" className="gap-2">
+                <Link to={isAuthenticated ? "/dashboard" : "/auth"}>
+                  Open the workstation
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </motion.div>
           </div>
         </section>
       </main>
 
       <footer className="border-border/70 border-t">
-        <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs sm:flex-row">
-          <span>
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs sm:flex-row">
+          <span className="text-muted-foreground">
             Secure Mail Analysis — passive cryptographic posture assessment for email
             communications.
           </span>
-          <span className="sms-mono">PCAP in · evidence out. No decryption, no data exfiltration.</span>
+          <span className="sms-mono text-muted-foreground/70 text-[10px] tracking-[0.1em] uppercase">
+            pcap in · evidence out
+          </span>
         </div>
       </footer>
     </div>

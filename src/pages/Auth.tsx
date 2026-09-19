@@ -111,28 +111,27 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-
-      
+    <div className="sms-grid-bg flex min-h-screen flex-col">
       {/* Auth Content */}
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex items-center justify-center h-full flex-col">
-        <Card className="min-w-[350px] pb-0 border shadow-md">
+      <div className="flex flex-1 items-center justify-center px-4">
+        <div className="flex h-full w-full max-w-sm flex-col items-center justify-center">
+        <Card className="w-full min-w-[350px] border-border/80 bg-card/60 pb-0 shadow-none backdrop-blur-sm">
           {step === "signIn" ? (
             <>
               <CardHeader className="text-center">
-                <div className="mt-4 mb-2 flex justify-center">
+                <div className="mt-4 mb-3 flex justify-center">
                   <Link
                     to="/"
-                    className="bg-primary/15 flex size-11 items-center justify-center rounded-sm"
+                    className="border-primary/40 bg-primary/10 text-primary flex size-11 items-center justify-center rounded-sm border transition-colors hover:bg-primary/15"
                   >
-                    <ShieldCheck className="text-primary size-5" />
+                    <ShieldCheck className="size-5" />
                   </Link>
                 </div>
-                <CardTitle className="text-xl tracking-tight">Secure Mail Analysis</CardTitle>
+                <p className="sms-label text-muted-foreground">Secure Mail Analysis</p>
+                <CardTitle className="mt-1.5 text-lg tracking-tight">Operator sign-in</CardTitle>
                 <CardDescription>
-                  Sign in to the workstation to analyze captures and generate evidence-linked
-                  posture reports.
+                  Access the workstation to analyze captures and generate evidence-linked posture
+                  reports.
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleEmailSubmit}>
@@ -277,8 +276,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             </>
           )}
 
-          <div className="text-muted-foreground bg-muted border-t rounded-b-lg px-6 py-4 text-center text-xs">
-            Analysis runs entirely in your browser — captures are never uploaded.
+          <div className="bg-muted/40 border-t px-6 py-3.5">
+            <p className="sms-mono text-muted-foreground/80 text-center text-[10px] tracking-[0.06em]">
+              Analysis runs entirely in your browser — captures are never uploaded.
+            </p>
           </div>
         </Card>
         </div>

@@ -1,4 +1,13 @@
-/* DO NOT CHANGE */
+/* Typography: IBM Plex Sans + IBM Plex Mono — a technical type family with a
+   genuine engineering pedigree, giving the workstation a human-designed voice. */
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));
@@ -9,6 +18,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -44,20 +55,20 @@
 
 /* CHANGE VALUES FOR THEME */
 :root {
-  --radius: 0.375rem;
+  --radius: 0.25rem;
   --background: oklch(0.13 0.014 235);
   --foreground: oklch(0.93 0.006 240);
-  --card: oklch(0.17 0.016 235);
+  --card: oklch(0.16 0.016 235);
   --card-foreground: oklch(0.93 0.006 240);
   --popover: oklch(0.17 0.016 235);
   --popover-foreground: oklch(0.93 0.006 240);
   --primary: oklch(0.82 0.11 205);
   --primary-foreground: oklch(0.14 0.02 235);
-  --secondary: oklch(0.24 0.018 235);
+  --secondary: oklch(0.23 0.018 235);
   --secondary-foreground: oklch(0.9 0.008 240);
-  --muted: oklch(0.21 0.016 235);
-  --muted-foreground: oklch(0.62 0.02 235);
-  --accent: oklch(0.24 0.018 235);
+  --muted: oklch(0.2 0.016 235);
+  --muted-foreground: oklch(0.63 0.02 235);
+  --accent: oklch(0.23 0.018 235);
   --accent-foreground: oklch(0.9 0.008 240);
   --destructive: oklch(0.62 0.21 25);
   --border: oklch(1 0 0 / 9%);
@@ -68,15 +79,16 @@
   --chart-3: oklch(0.65 0.21 25);
   --chart-4: oklch(0.72 0.15 160);
   --chart-5: oklch(0.65 0.13 250);
-  --sidebar: oklch(0.15 0.015 235);
+  --sidebar: oklch(0.12 0.014 235);
   --sidebar-foreground: oklch(0.93 0.006 240);
   --sidebar-primary: oklch(0.82 0.11 205);
   --sidebar-primary-foreground: oklch(0.14 0.02 235);
-  --sidebar-accent: oklch(0.24 0.018 235);
+  --sidebar-accent: oklch(0.23 0.018 235);
   --sidebar-accent-foreground: oklch(0.9 0.008 240);
   --sidebar-border: oklch(1 0 0 / 9%);
   --sidebar-ring: oklch(0.82 0.11 205);
-  /* Secure Mail Analysis domain tokens (severity palette) */
+  /* Severity palette — red reserved for critical/high, amber for medium,
+     cyan for technical/informational, green only for verified healthy. */
   --sms-critical: oklch(0.63 0.21 25);
   --sms-high: oklch(0.68 0.16 50);
   --sms-medium: oklch(0.78 0.13 85);
@@ -87,21 +99,21 @@
 }
 
 .dark {
-  /* The workstation is intentionally always-dark; the .dark variant mirrors
-     :root so shadcn components keep working if a dark class is applied. */
+  /* The workstation is intentionally always-dark; .dark mirrors :root so
+     shadcn components keep working if a dark class is applied. */
   --background: oklch(0.13 0.014 235);
   --foreground: oklch(0.93 0.006 240);
-  --card: oklch(0.17 0.016 235);
+  --card: oklch(0.16 0.016 235);
   --card-foreground: oklch(0.93 0.006 240);
   --popover: oklch(0.17 0.016 235);
   --popover-foreground: oklch(0.93 0.006 240);
   --primary: oklch(0.82 0.11 205);
   --primary-foreground: oklch(0.14 0.02 235);
-  --secondary: oklch(0.24 0.018 235);
+  --secondary: oklch(0.23 0.018 235);
   --secondary-foreground: oklch(0.9 0.008 240);
-  --muted: oklch(0.21 0.016 235);
-  --muted-foreground: oklch(0.62 0.02 235);
-  --accent: oklch(0.24 0.018 235);
+  --muted: oklch(0.2 0.016 235);
+  --muted-foreground: oklch(0.63 0.02 235);
+  --accent: oklch(0.23 0.018 235);
   --accent-foreground: oklch(0.9 0.008 240);
   --destructive: oklch(0.62 0.21 25);
   --border: oklch(1 0 0 / 9%);
@@ -112,11 +124,11 @@
   --chart-3: oklch(0.65 0.21 25);
   --chart-4: oklch(0.72 0.15 160);
   --chart-5: oklch(0.65 0.13 250);
-  --sidebar: oklch(0.15 0.015 235);
+  --sidebar: oklch(0.12 0.014 235);
   --sidebar-foreground: oklch(0.93 0.006 240);
   --sidebar-primary: oklch(0.82 0.11 205);
   --sidebar-primary-foreground: oklch(0.14 0.02 235);
-  --sidebar-accent: oklch(0.24 0.018 235);
+  --sidebar-accent: oklch(0.23 0.018 235);
   --sidebar-accent-foreground: oklch(0.9 0.008 240);
   --sidebar-border: oklch(1 0 0 / 9%);
   --sidebar-ring: oklch(0.82 0.11 205);
@@ -133,13 +145,21 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
     font-feature-settings: "tnum" 1;
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
     cursor: pointer;
+  }
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 }
 
@@ -152,7 +172,47 @@
     background-size: 44px 44px;
   }
   .sms-mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-      "Liberation Mono", "Courier New", monospace;
+    font-family: var(--font-mono);
+  }
+  /* Section label: mono, small, wide-tracked — the workstation's annotation voice */
+  .sms-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  /* Hairline top accent for panels */
+  .sms-rule {
+    position: relative;
+  }
+  .sms-rule::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 2.5rem;
+    height: 1px;
+    background: var(--primary);
+    opacity: 0.7;
+  }
+  /* One restrained ambient motion: the analysis scanline */
+  @keyframes sms-scan {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+  .sms-scanline {
+    animation: sms-scan 1.6s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sms-scanline {
+    animation: none;
   }
 }

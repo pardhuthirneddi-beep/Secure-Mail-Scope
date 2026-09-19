@@ -2,21 +2,20 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AppShell } from "@/components/AppShell";
-import { StatTile, RiskBadge, CaptureMetaLine } from "@/components/sms-ui";
+import {
+  FlushPanel,
+  Panel,
+  RiskDot,
+  StageProgress,
+  StatStrip,
+  CodeChip,
+} from "@/components/sms-ui";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { STAGES, runPipeline, resultToReportSeed, DISCLAIMER } from "@/sms/pipeline";
 import { buildDemoPcap, listDemoScenarios } from "@/sms/scenarios";
+import { formatBytes, formatDuration, formatDate } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
-import {
-  AlertTriangle,
-  FileUp,
-  FlaskConical,
-  Loader2,
-  ScanSearch,
-  ShieldCheck,
-} from "lucide-react";
+import { FileUp, Loader2, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -25,12 +24,23 @@ type RunState =
   | { phase: "running"; stageIndex: number; label: string }
   | { phase: "error"; message: string };
 
+const RISK_ORDER = ["healthy", "low", "medium", "high", "critical"];
+
+const RISK_DOT_TONE = {
+  healthy: "bg-[--sms-healthy]",
+  low: "bg-[--sms-low]",
+  medium: "bg-[--sms-medium]",
+  high: "bg-[--sms-high]",
+  critical: "bg-[--sms-critical]",
+} as const;
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const captures = useQuery(api.captures.listCaptures, {}) ?? [];
   const createCapture = useMutation(api.captures.createCapture);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [run, setRun] = useState<RunState>({ phase: "idle" });
+  const [dragOver, setDragOver] = useState(false);
   const demos = useMemo(() => listDemoScenarios(), []);
 
   const totals = useMemo(() => {
@@ -47,7 +57,12 @@ export default function Dashboard() {
     return { findings, high, critical, sessions };
   }, [captures]);
 
-  const analyze = async (buffer: ArrayBuffer, fileName: string, isDemo: boolean, demoId?: string) => {
+  const analyze = async (
+    buffer: ArrayBuffer,
+    fileName: string,
+    isDemo: boolean,
+    demoId?: string,
+  ) => {
     setRun({ phase: "running", stageIndex: 0, label: STAGES[0].label });
     try {
       const result = await runPipeline(buffer, fileName, ({ stageId, done }) => {
@@ -62,14 +77,10 @@ export default function Dashboard() {
         sessions: result.sessions,
         evidence: result.evidence,
       });
-      const maxRisk = result.sessions.reduce<string>(
-        (acc, s) => {
-          const lv = result.riskBySession[s.id]?.level ?? "healthy";
-          const order = ["healthy", "low", "medium", "high", "critical"];
-          return order.indexOf(lv) > order.indexOf(acc) ? lv : acc;
-        },
-        "healthy",
-      );
+      const maxRisk = result.sessions.reduce<string>((acc, s) => {
+        const lv = result.riskBySession[s.id]?.level ?? "healthy";
+        return RISK_ORDER.indexOf(lv) > RISK_ORDER.indexOf(acc) ? lv : acc;
+      }, "healthy");
       const id = await createCapture({
         name: fileName,
         sizeBytes: result.capture.sizeBytes,
@@ -98,7 +109,10 @@ export default function Dashboard() {
 
   const handleFile = (file: File) => {
     if (!/\.(pcap|pcapng)$/i.test(file.name)) {
-      setRun({ phase: "error", message: "Unsupported file type. Provide a .pcap or .pcapng capture." });
+      setRun({
+        phase: "error",
+        message: "Unsupported file type. Provide a .pcap or .pcapng capture.",
+      });
       return;
     }
     if (file.size > 64 * 1024 * 1024) {
@@ -112,7 +126,10 @@ export default function Dashboard() {
     const demo = demos.find((d) => d.id === demoId);
     if (!demo) return;
     const { bytes, fileName } = buildDemoPcap(demo);
-    const buf = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+    const buf = bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength,
+    ) as ArrayBuffer;
     analyze(buf, fileName, true, demoId);
   };
 
@@ -123,8 +140,13 @@ export default function Dashboard() {
       title="Overview"
       subtitle="Evidence-driven cryptographic posture assessment for email traffic"
       actions={
-        <Button size="sm" className="gap-2" disabled={running} onClick={() => fileInput.current?.click()}>
-          <FileUp className="size-4" />
+        <Button
+          size="sm"
+          className="gap-2"
+          disabled={running}
+          onClick={() => fileInput.current?.click()}
+        >
+          <FileUp className="size-3.5" />
           New analysis
         </Button>
       }
@@ -141,147 +163,187 @@ export default function Dashboard() {
         }}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile label="Captures analyzed" value={String(captures.length)} tone="info" />
-        <StatTile label="Email sessions" value={String(totals.sessions)} hint="Reconstructed from packet evidence" />
-        <StatTile label="Open findings" value={String(totals.findings)} tone={totals.findings > 0 ? "warning" : "good"} />
-        <StatTile
-          label="High / critical"
-          value={totals.high + totals.critical > 0 ? String(totals.high + totals.critical) : "0"}
-          tone={totals.critical > 0 ? "danger" : totals.high > 0 ? "warning" : "good"}
-        />
-      </div>
+      <StatStrip
+        items={[
+          { label: "Captures", value: String(captures.length), tone: "info" },
+          { label: "Sessions", value: String(totals.sessions), hint: "Reconstructed from packets" },
+          {
+            label: "Findings",
+            value: String(totals.findings),
+            tone: totals.findings > 0 ? "warning" : "good",
+          },
+          {
+            label: "High / critical",
+            value: String(totals.high + totals.critical),
+            tone: totals.critical > 0 ? "danger" : totals.high > 0 ? "warning" : "good",
+          },
+        ]}
+      />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-5">
-        <Card className="border-border/70 shadow-none lg:col-span-3">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <FileUp className="text-primary size-4" />
-              Analyze a capture
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="border-border/70 hover:border-primary/50 sms-grid-bg cursor-pointer rounded-md border border-dashed px-6 py-8 text-center transition-colors"
-              onClick={() => !running && fileInput.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                const f = e.dataTransfer.files?.[0];
-                if (f) handleFile(f);
-              }}
-            >
-              <ScanSearch className="text-muted-foreground mx-auto mb-2 size-6" />
-              <p className="text-sm font-medium">Drop a PCAP here or click to browse</p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                .pcap / .pcapng up to 64 MB — SMTP, IMAP and POP3 sessions are reconstructed
-                locally; nothing leaves your browser except the finished evidence report.
-              </p>
-            </div>
-
+        {/* Intake panel */}
+        <Panel
+          label="Capture intake"
+          meta=".pcap / .pcapng · ≤ 64 MB"
+          className="lg:col-span-3"
+        >
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => !running && fileInput.current?.click()}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" || e.key === " ") && !running) fileInput.current?.click();
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              const f = e.dataTransfer.files?.[0];
+              if (f) handleFile(f);
+            }}
+            className={cn(
+              "relative overflow-hidden rounded-sm border border-dashed px-6 py-9 text-center transition-colors",
+              dragOver
+                ? "border-primary/70 bg-primary/5"
+                : "border-border hover:border-primary/40",
+            )}
+          >
             {running && (
-              <div className="mt-4">
-                <div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
-                  <Loader2 className="size-3.5 animate-spin" />
-                  {run.phase === "running" ? run.label : "Working…"}
-                </div>
-                <Progress
-                  value={((run.phase === "running" ? run.stageIndex : 0) + 1) * (100 / STAGES.length)}
-                  className="h-1.5"
-                />
-              </div>
+              <span className="sms-scanline bg-primary/10 pointer-events-none absolute inset-x-0 top-0 h-10" />
             )}
-            {run.phase === "error" && (
-              <div className="border-[--sms-critical]/40 bg-[--sms-critical]/10 text-[--sms-critical] mt-4 flex items-start gap-2 rounded-sm border px-3 py-2 text-xs">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-                {run.message}
-              </div>
-            )}
+            <p className="text-sm font-medium">
+              {dragOver ? "Release to stage the capture" : "Drop a capture here, or click to browse"}
+            </p>
+            <p className="text-muted-foreground mx-auto mt-1.5 max-w-md text-xs leading-relaxed">
+              SMTP, IMAP and POP3 sessions are reconstructed and assessed locally in your browser.
+              Packets are never uploaded; only the finished evidence report is stored.
+            </p>
+          </div>
 
-            <div className="mt-5">
-              <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider">
-                <FlaskConical className="size-3.5" />
-                Or explore a generated demo capture
+          {run.phase === "error" && (
+            <div className="border-[--sms-critical]/40 bg-[--sms-critical]/10 text-[--sms-critical] mt-3 rounded-sm border px-3 py-2 text-xs">
+              {run.message}
+            </div>
+          )}
+
+          {running && (
+            <div className="border-border/70 bg-background/60 mt-3 rounded-sm border p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="sms-label text-muted-foreground">Pipeline</span>
+                <span className="sms-mono text-primary text-[11px]">
+                  {run.phase === "running" ? run.label : "…"}
+                  <Loader2 className="ml-1.5 inline size-3 animate-spin align-[-2px]" />
+                </span>
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {demos.map((d) => (
-                  <button
-                    key={d.id}
-                    disabled={running}
-                    onClick={() => handleDemo(d.id)}
-                    className="border-border/70 hover:border-primary/50 hover:bg-accent/50 rounded-sm border px-3 py-2 text-left transition-colors disabled:opacity-50"
-                  >
-                    <div className="text-xs font-medium">{d.label.replace(/^DEMO \d+ — /, "")}</div>
-                    <div className="text-muted-foreground mt-0.5 text-[11px] leading-snug">
+              <StageProgress stages={STAGES} activeIndex={run.phase === "running" ? run.stageIndex : 0} />
+            </div>
+          )}
+
+          <div className="mt-5">
+            <div className="sms-label text-muted-foreground mb-2">
+              Reference captures — generated locally, labeled demo
+            </div>
+            <div className="border-border/70 overflow-hidden rounded-sm border">
+              {demos.map((d, i) => (
+                <button
+                  key={d.id}
+                  disabled={running}
+                  onClick={() => handleDemo(d.id)}
+                  className={cn(
+                    "group hover:bg-accent/50 flex w-full items-center gap-3 px-3 py-2 text-left transition-colors disabled:opacity-50",
+                    i > 0 && "border-border/70 border-t",
+                  )}
+                >
+                  <span className="sms-mono text-muted-foreground/70 w-5 shrink-0 text-[10px]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-medium">
+                      {d.label.replace(/^DEMO \d+ — /, "")}
+                    </span>
+                    <span className="text-muted-foreground block truncate text-[11px]">
                       {d.description}
+                    </span>
+                  </span>
+                  <span className="sms-mono text-muted-foreground/50 group-hover:text-primary shrink-0 text-[10px] transition-colors">
+                    run →
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </Panel>
+
+        {/* Recent captures */}
+        <FlushPanel
+          label="Recent captures"
+          meta={captures.length > 0 ? captures.length + " analyzed" : "empty"}
+          className="lg:col-span-2"
+          bodyClassName="max-h-[480px] overflow-y-auto"
+        >
+          {captures.length === 0 ? (
+            <p className="text-muted-foreground px-4 py-8 text-center text-xs leading-relaxed">
+              No captures analyzed yet.
+              <br />
+              Upload a PCAP or run a reference capture to begin.
+            </p>
+          ) : (
+            <ul className="divide-border/70 divide-y">
+              {captures.slice(0, 8).map((c) => (
+                <li key={c._id}>
+                  <button
+                    className="hover:bg-accent/50 group w-full px-3.5 py-2.5 text-left transition-colors"
+                    onClick={() => navigate("/captures/" + c._id)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="sms-mono flex min-w-0 items-center gap-1.5 truncate text-xs font-medium">
+                        <span
+                          className={cn(
+                            "size-1.5 shrink-0 rounded-[1px]",
+                            RISK_DOT_TONE[c.maxRisk as keyof typeof RISK_DOT_TONE] ?? "bg-muted",
+                          )}
+                        />
+                        {c.isDemo && (
+                          <span className="text-[--sms-medium] shrink-0 rounded-[2px] border border-[--sms-medium]/40 px-1 text-[9px] uppercase">
+                            demo
+                          </span>
+                        )}
+                        <span className="truncate">{c.name}</span>
+                      </span>
+                      <span className="sms-mono text-muted-foreground/50 group-hover:text-primary shrink-0 text-[10px] transition-colors">
+                        open →
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground mt-1 flex items-center gap-2 text-[11px]">
+                      <span>
+                        {c.sessionCount} sessions · {c.findingCount} findings
+                      </span>
+                      <span className="text-muted-foreground/50">·</span>
+                      <span>{formatBytes(c.sizeBytes)}</span>
+                      <span className="text-muted-foreground/50">·</span>
+                      <span>{formatDuration(c.durationSec)}</span>
                     </div>
                   </button>
-                ))}
-              </div>
-              <p className="text-muted-foreground mt-2 text-[11px]">
-                Demo captures are generated locally and labeled as demonstration data end to end.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70 shadow-none lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Recent captures</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {captures.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No captures analyzed yet. Upload a PCAP or run a demo capture to see evidence-linked
-                findings here.
-              </p>
-            ) : (
-              <ul className="divide-border/70 divide-y">
-                {captures.slice(0, 6).map((c) => (
-                  <li key={c._id}>
-                    <button
-                      className={cn(
-                        "hover:bg-accent/50 w-full rounded-sm px-2 py-2.5 text-left transition-colors",
-                      )}
-                      onClick={() => navigate("/captures/" + c._id)}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="sms-mono truncate text-xs font-medium">
-                          {c.isDemo && (
-                            <span className="text-[--sms-medium] mr-1.5 rounded-sm border border-[--sms-medium]/40 px-1 py-px text-[9px] uppercase">
-                              demo
-                            </span>
-                          )}
-                          {c.name}
-                        </span>
-                        <RiskBadge level={c.maxRisk as never} />
-                      </div>
-                      <div className="mt-1 flex items-center justify-between">
-                        <CaptureMetaLine
-                          sizeBytes={c.sizeBytes}
-                          packetCount={c.packetCount}
-                          durationSec={c.durationSec}
-                        />
-                        <span className="text-muted-foreground text-[11px]">
-                          {c.sessionCount} sessions · {c.findingCount} findings
-                        </span>
-                      </div>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+                </li>
+              ))}
+            </ul>
+          )}
+        </FlushPanel>
       </div>
 
-      <div className="border-border/70 bg-card/40 mt-4 flex items-start gap-3 rounded-md border px-4 py-3">
-        <ShieldCheck className="text-[--sms-healthy] mt-0.5 size-4 shrink-0" />
+      <div className="border-border/70 bg-card/40 mt-4 rounded-sm border px-4 py-3">
         <p className="text-muted-foreground text-xs leading-relaxed">
-          {DISCLAIMER} Analysis runs entirely in your browser: packets are never uploaded, and
-          encrypted message content is never decrypted. Every finding links back to packet evidence
-          with session identifiers and byte-level excerpts included.
+          <span className="sms-label text-foreground mr-2">Scope</span>
+          {DISCLAIMER}
         </p>
+      </div>
+      <div className="sms-mono text-muted-foreground/70 mt-3 flex items-center gap-1.5 text-[10px]">
+        <ChevronRight className="size-3" />
+        workstation ready · {formatDate(Date.now())}
       </div>
     </AppShell>
   );
