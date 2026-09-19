@@ -5,6 +5,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandMark, BrandWordmark, ForensicWaves, TechCorner } from "@/components/sms-brand";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "react-router";
 
@@ -81,6 +82,19 @@ const CAPABILITIES = [
   },
 ];
 
+/** The investigation chain — the product's core visual storytelling. */
+const CHAIN = [
+  "PCAP",
+  "Network Evidence",
+  "Session",
+  "Protocol",
+  "TLS / Cryptography",
+  "Finding",
+  "Risk",
+  "Remediation",
+  "Report",
+];
+
 export default function Landing() {
   const { isAuthenticated } = useAuth();
 
@@ -89,15 +103,8 @@ export default function Landing() {
       <header className="border-border/70 bg-background/95 sticky top-0 z-20 border-b">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="border-primary/40 bg-primary/10 text-primary flex size-7 items-center justify-center rounded-sm border">
-              <ShieldCheck className="size-4" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-[13px] font-semibold tracking-tight">Secure Mail Analysis</div>
-              <div className="sms-mono text-muted-foreground text-[10px]">
-                cryptographic posture assessment
-              </div>
-            </div>
+            <BrandMark size={28} />
+            <BrandWordmark compact />
           </Link>
           <nav className="flex items-center gap-1">
             <Button asChild variant="ghost" size="sm" className="text-xs">
@@ -118,32 +125,57 @@ export default function Landing() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="sms-grid-bg border-border/70 border-b">
-          <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:py-28">
+        <section className="sms-grid-bg border-border/70 relative overflow-hidden border-b">
+          <ForensicWaves
+            height={120}
+            tone="soft"
+            className="pointer-events-none absolute inset-x-0 bottom-0"
+          />
+          <TechCorner className="top-16 left-0 hidden sm:block" />
+          <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:py-24">
             <motion.p {...fadeUp} className="sms-label text-primary">
               Passive capture analysis · evidence-driven
             </motion.p>
             <motion.h1
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.05 }}
-              className="mt-4 max-w-2xl text-3xl leading-[1.15] font-bold tracking-tight sm:text-[2.6rem]"
+              className="mt-4 max-w-2xl text-3xl leading-[1.12] font-bold tracking-tight sm:text-[2.75rem]"
             >
-              Know exactly how your email was protected.
-              <span className="text-primary block">Prove it from the packets.</span>
+              From packets
+              <span className="text-primary"> to proof.</span>
             </motion.h1>
             <motion.p
               {...fadeUp}
               transition={{ ...fadeUp.transition, delay: 0.1 }}
-              className="text-muted-foreground mt-5 max-w-2xl text-[15px] leading-relaxed"
+              className="text-muted-foreground mt-4 max-w-xl text-[15px] leading-relaxed"
             >
-              Secure Mail Analysis reconstructs email sessions from a captured PCAP, traces every
+              SecureMailScope reconstructs email sessions from a captured PCAP, traces every
               STARTTLS transition, extracts TLS versions, cipher suites and certificates, and
               reports what was protected, what was exposed, and what to fix first. Every finding
               cites the packet evidence that proves it — nothing is inferred beyond the capture.
             </motion.p>
+
+            {/* The chain, as a connected strip */}
             <motion.div
               {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.15 }}
+              transition={{ ...fadeUp.transition, delay: 0.14 }}
+              className="mt-7 flex flex-wrap items-center gap-x-1.5 gap-y-2"
+            >
+              {CHAIN.map((c, i) => (
+                <span key={c} className="flex items-center gap-1.5">
+                  {i > 0 && <ArrowRight className="text-(--sms-wave)/40 size-3" />}
+                  <span
+                    className={cnChain(i)}
+                  >
+                    {c}
+                  </span>
+                </span>
+              ))}
+            </motion.div>
+
+            <motion.div
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.18 }}
               className="mt-8 flex flex-col gap-3 sm:flex-row"
             >
               <Button asChild size="lg" className="gap-2">
@@ -160,8 +192,8 @@ export default function Landing() {
             {/* Terminal-style sample of real output */}
             <motion.div
               {...fadeUp}
-              transition={{ ...fadeUp.transition, delay: 0.2 }}
-              className="border-border/80 bg-card/50 mt-14 rounded-sm border"
+              transition={{ ...fadeUp.transition, delay: 0.22 }}
+              className="border-border/80 bg-card/50 mt-12 rounded-sm border"
             >
               <div className="border-border/80 bg-muted/30 flex items-center justify-between border-b px-3.5 py-2">
                 <span className="sms-mono text-muted-foreground text-[11px]">
@@ -209,8 +241,7 @@ export default function Landing() {
                   posture report · prioritized remediation · JSON evidence bundle
                 </span>
               </div>
-              {/* footer strip intentionally plain — output example, not decoration */}
-              <div className="sms-mono text-muted-foreground/50 border-t border-border/60 px-3.5 py-1.5 text-[9px] uppercase tracking-[0.14em]">
+              <div className="sms-mono text-muted-foreground/50 border-border/60 border-t px-3.5 py-1.5 text-[9px] uppercase tracking-[0.14em]">
                 illustrative output — generated by the production pipeline from demo captures
               </div>
             </motion.div>
@@ -294,13 +325,13 @@ export default function Landing() {
             <motion.h2 {...fadeUp} className="mt-3 max-w-xl text-2xl font-bold tracking-tight sm:text-3xl">
               Built for teams that must show their work
             </motion.h2>
-            <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-border/70 bg-border/60 md:grid-cols-2 lg:grid-cols-3">
+            <div className="border-border/70 bg-border/40 mt-10 grid gap-px overflow-hidden rounded-sm border md:grid-cols-2 lg:grid-cols-3">
               {CAPABILITIES.map((cap, i) => (
                 <motion.div
                   key={cap.k}
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.04 * i }}
-                  className="bg-background hover:bg-accent/30 group p-5 transition-colors"
+                  className="bg-background hover:bg-accent/30 group relative p-5 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <span className="sms-mono text-muted-foreground/70 text-[10px] tracking-[0.14em]">
@@ -317,8 +348,13 @@ export default function Landing() {
         </section>
 
         {/* CTA */}
-        <section className="sms-grid-bg">
-          <div className="mx-auto w-full max-w-6xl px-4 py-16 text-center sm:py-20">
+        <section className="sms-grid-bg relative overflow-hidden">
+          <ForensicWaves
+            height={110}
+            tone="soft"
+            className="pointer-events-none absolute inset-x-0 bottom-0"
+          />
+          <div className="relative mx-auto w-full max-w-6xl px-4 py-16 text-center sm:py-20">
             <motion.p {...fadeUp} className="sms-label text-primary">
               Get started
             </motion.p>
@@ -344,14 +380,23 @@ export default function Landing() {
       <footer className="border-border/70 border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs sm:flex-row">
           <span className="text-muted-foreground">
-            Secure Mail Analysis — passive cryptographic posture assessment for email
+            SecureMailScope — AI-assisted cryptographic security posture assessment for email
             communications.
           </span>
           <span className="sms-mono text-muted-foreground/70 text-[10px] tracking-[0.1em] uppercase">
-            pcap in · evidence out
+            from packets to proof
           </span>
         </div>
       </footer>
     </div>
   );
+}
+
+function cnChain(i: number): string {
+  const base =
+    "sms-mono rounded-[2px] border px-1.5 py-0.5 text-[10px] tracking-[0.06em]";
+  if (i === 0) return base + " border-(--sms-wave)/40 bg-(--sms-wave)/8 text-foreground";
+  if (i === CHAIN.length - 1)
+    return base + " border-(--sms-wave)/40 bg-(--sms-wave)/8 text-foreground";
+  return base + " border-border text-muted-foreground";
 }

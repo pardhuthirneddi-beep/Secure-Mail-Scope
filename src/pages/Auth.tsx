@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/input-otp";
 
 import { useAuth } from "@/hooks/use-auth";
-import { ShieldCheck } from "lucide-react";
+import { BrandMark, ForensicWaves } from "@/components/sms-brand";
 import { Link } from "react-router";
 import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
@@ -111,7 +111,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   };
 
   return (
-    <div className="sms-grid-bg flex min-h-screen flex-col">
+    <div className="sms-grid-bg relative flex min-h-screen flex-col">
+      <ForensicWaves
+        height={110}
+        tone="soft"
+        className="pointer-events-none fixed inset-x-0 bottom-0"
+      />
       {/* Auth Content */}
       <div className="flex flex-1 items-center justify-center px-4">
         <div className="flex h-full w-full max-w-sm flex-col items-center justify-center">
@@ -122,12 +127,12 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <div className="mt-4 mb-3 flex justify-center">
                   <Link
                     to="/"
-                    className="border-primary/40 bg-primary/10 text-primary flex size-11 items-center justify-center rounded-sm border transition-colors hover:bg-primary/15"
+                    className="transition-colors hover:opacity-80"
                   >
-                    <ShieldCheck className="size-5" />
+                    <BrandMark size={44} />
                   </Link>
                 </div>
-                <p className="sms-label text-muted-foreground">Secure Mail Analysis</p>
+                <p className="sms-label text-muted-foreground">SecureMailScope</p>
                 <CardTitle className="mt-1.5 text-lg tracking-tight">Operator sign-in</CardTitle>
                 <CardDescription>
                   Access the workstation to analyze captures and generate evidence-linked posture

@@ -12,7 +12,7 @@ export default function NotFound() {
     >
       <div className="w-full max-w-sm">
         <div className="sms-mono text-muted-foreground/70 flex items-center justify-between text-[10px] tracking-[0.14em] uppercase">
-          <span>secure mail analysis</span>
+          <span>securemailscope</span>
           <span>err 404</span>
         </div>
         <div className="border-border/80 bg-card/40 mt-2 rounded-sm border p-8 text-center">

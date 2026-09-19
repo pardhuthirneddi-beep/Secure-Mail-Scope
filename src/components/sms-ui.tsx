@@ -371,6 +371,68 @@ export function Disclosure({
   );
 }
 
+/* ------------------------------------------------------------ pipeline flow */
+
+/** State of one analysis stage in the connected flow. */
+export type FlowState = "done" | "active" | "pending" | "warning";
+
+/**
+ * Horizontal connected pipeline: small technical icon boxes joined by thin
+ * amber connectors — the workstation's visual summary of the analysis chain.
+ * Icons come from the caller; state styling is deterministic.
+ */
+export function PipelineFlow({
+  stages,
+  className,
+}: {
+  stages: Array<{ id: string; label: string; icon?: React.ReactNode; state?: FlowState }>;
+  className?: string;
+}) {
+  const nodes: React.ReactNode[] = [];
+  stages.forEach((s, i) => {
+    if (i > 0) {
+      nodes.push(
+        <svg
+          key={"c-" + s.id}
+          viewBox="0 0 10 10"
+          className="text-(--sms-wave)/50 mx-0.5 size-2 shrink-0 self-center"
+          aria-hidden
+        >
+          <path d="M2 1.5 6.5 5 2 8.5" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>,
+      );
+    }
+    const state = s.state ?? "pending";
+    nodes.push(
+      <div key={s.id} className="flex min-w-[72px] flex-1 flex-col items-center gap-1.5">
+        <span
+          className={cn(
+            "flex size-8 items-center justify-center rounded-[3px] border transition-colors duration-300",
+            state === "done" &&
+              "border-(--sms-healthy)/35 bg-(--sms-healthy)/8 text-(--sms-healthy)",
+            state === "active" &&
+              "border-(--sms-wave)/55 bg-(--sms-wave)/10 text-primary",
+            state === "warning" &&
+              "border-(--sms-medium)/50 bg-(--sms-medium)/10 text-(--sms-medium)",
+            state === "pending" && "border-border text-muted-foreground/50",
+          )}
+        >
+          {s.icon}
+        </span>
+        <span
+          className={cn(
+            "sms-mono max-w-[92px] text-center text-[9px] leading-tight",
+            state === "pending" ? "text-muted-foreground/50" : "text-muted-foreground",
+          )}
+        >
+          {s.label}
+        </span>
+      </div>,
+    );
+  });
+  return <div className={cn("flex items-start", className)}>{nodes}</div>;
+}
+
 /* --------------------------------------------------------- pipeline stage */
 
 /** Vertical stage list used while a capture is being analyzed. */

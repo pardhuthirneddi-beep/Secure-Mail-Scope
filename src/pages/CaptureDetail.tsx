@@ -35,9 +35,21 @@ import {
   sessionTitle,
 } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
+import { ForensicWaves } from "@/components/sms-brand";
 import type { Evidence, Finding, Session } from "@/sms/types";
 import type { RiskLevel } from "@/sms/theme";
-import { FileDown, FileJson, Loader2, Trash2 } from "lucide-react";
+import {
+  ArrowLeftRight,
+  FileCheck2,
+  FileDown,
+  FileJson,
+  Gauge,
+  Loader2,
+  Mail,
+  Network,
+  ShieldAlert,
+  Trash2,
+} from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -105,6 +117,57 @@ function EvidenceItem({ ev }: { ev: Evidence }) {
         </pre>
       )}
     </Disclosure>
+  );
+}
+
+/* ------------------------------------------------- forensic timeline map */
+
+/**
+ * Maps each observed timeline event kind onto the forensic phase chain so the
+ * session view reads as one connected investigation rather than loose entries.
+ * Purely presentational: the phase list is derived from actual recorded events.
+ */
+const PHASE_META: Record<
+  string,
+  { label: string; icon: React.ReactNode; order: number }
+> = {
+  "tcp-established": { label: "TCP Session", icon: <Network className="size-3" />, order: 0 },
+  "protocol-identified": { label: "Protocol Detected", icon: <Mail className="size-3" />, order: 1 },
+  "starttls-advertised": { label: "STARTTLS", icon: <ArrowLeftRight className="size-3" />, order: 2 },
+  "starttls-requested": { label: "STARTTLS", icon: <ArrowLeftRight className="size-3" />, order: 2 },
+  "starttls-accepted": { label: "STARTTLS", icon: <ArrowLeftRight className="size-3" />, order: 2 },
+  "starttls-failed": { label: "STARTTLS", icon: <ArrowLeftRight className="size-3" />, order: 2 },
+  "plaintext-after-failed-starttls": { label: "STARTTLS", icon: <ArrowLeftRight className="size-3" />, order: 2 },
+  "tls-started": { label: "TLS Handshake", icon: <ShieldAlert className="size-3" />, order: 3 },
+  "tls-negotiated": { label: "TLS Handshake", icon: <ShieldAlert className="size-3" />, order: 3 },
+  "tls-failed": { label: "TLS Handshake", icon: <ShieldAlert className="size-3" />, order: 3 },
+  "certificate-presented": { label: "Certificate", icon: <FileCheck2 className="size-3" />, order: 4 },
+  "certificate-evaluated": { label: "Certificate", icon: <FileCheck2 className="size-3" />, order: 4 },
+  "assessment-complete": { label: "Risk Assessment", icon: <Gauge className="size-3" />, order: 5 },
+};
+
+function ForensicPhaseRail({ session }: { session: Session }) {
+  const phases = useMemo(() => {
+    const seen = new Map<number, { label: string; icon: React.ReactNode }>();
+    for (const ev of session.timeline) {
+      const meta = PHASE_META[ev.kind];
+      if (meta && !seen.has(meta.order)) seen.set(meta.order, meta);
+    }
+    return [...seen.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => v);
+  }, [session]);
+  if (phases.length === 0) return null;
+  return (
+    <ol className="mb-4 flex flex-wrap items-center gap-y-1.5">
+      {phases.map((p, i) => (
+        <li key={p.label} className="flex items-center">
+          {i > 0 && <span className="bg-(--sms-wave)/30 mx-1.5 h-px w-4" />}
+          <span className="border-border/80 bg-muted/40 text-muted-foreground flex items-center gap-1.5 rounded-[2px] border px-1.5 py-0.5">
+            {p.icon}
+            <span className="sms-mono text-[9px] tracking-[0.08em] uppercase">{p.label}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -255,10 +318,12 @@ function SessionView({
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <span className="sms-label text-muted-foreground mb-2 block">Session timeline</span>
+          <ForensicPhaseRail session={session} />
           <ol>
             {session.timeline.map((ev, i) => {
               const adverse =
                 ev.kind.includes("failed") || ev.kind === "plaintext-after-failed-starttls";
+              const meta = PHASE_META[ev.kind];
               return (
                 <li key={i} className="border-border/60 relative border-l pb-3.5 pl-4 last:pb-0">
                   <span
@@ -267,7 +332,10 @@ function SessionView({
                       adverse ? "bg-(--sms-critical)" : "bg-primary/70",
                     )}
                   />
-                  <div className="text-xs leading-snug font-medium">{ev.label}</div>
+                  <div className="flex items-center gap-1.5 text-xs leading-snug font-medium">
+                    <span className="text-muted-foreground/70">{meta?.icon}</span>
+                    <span className="min-w-0">{ev.label}</span>
+                  </div>
                   <div className="sms-mono text-muted-foreground/70 mt-0.5 text-[10px]">
                     {formatTime(ev.ts)}
                   </div>
@@ -302,7 +370,7 @@ function SessionView({
             <div className="sms-label text-muted-foreground mb-2 flex items-center gap-2">
               Evidence
               <span className="sms-mono text-muted-foreground/50 normal-case">
-                {evidence.length} item{evidence.length === 1 ? "" : "s"}
+                {evidence.length} item{evidence.length === 1 ? "" : "s"} · from captured bytes
               </span>
             </div>
             {evidence.length === 0 ? (

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AppShell } from "@/components/AppShell";
-import { EvidenceChip, SeverityBadge } from "@/components/sms-ui";
+import { FlushPanel, SeverityBadge } from "@/components/sms-ui";
 import { Input } from "@/components/ui/input";
 import { parseCapturePayload } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,39 @@ const SEV_COUNT_CLASS: Record<Severity, string> = {
   low: "text-(--sms-low) border-(--sms-low)/40",
   info: "text-muted-foreground border-border",
 };
+
+/** Compact status badge: severity expressed as a small indicator, not a panel. */
+function StatusBadge({ severity }: { severity: Severity }) {
+  const label =
+    severity === "critical" || severity === "high"
+      ? severity === "critical"
+        ? "CRITICAL"
+        : "HIGH"
+      : severity === "medium"
+        ? "WARNING"
+        : severity === "low"
+          ? "ADVISORY"
+          : "INFO";
+  const cls =
+    severity === "critical" || severity === "high"
+      ? "text-(--sms-critical) border-(--sms-critical)/40"
+      : severity === "medium"
+        ? "text-(--sms-medium) border-(--sms-medium)/40"
+        : severity === "low"
+          ? "text-(--sms-low) border-(--sms-low)/40"
+          : "text-muted-foreground border-border";
+  return (
+    <span
+      className={cn(
+        "sms-mono inline-flex shrink-0 items-center gap-1.5 rounded-[2px] border px-1.5 py-px text-[9px] font-semibold tracking-[0.1em]",
+        cls,
+      )}
+    >
+      <span className="bg-current size-1 rounded-full opacity-80" />
+      {label}
+    </span>
+  );
+}
 
 export default function Findings() {
   const captures = useQuery(api.captures.listCaptures, {}) ?? [];
@@ -125,44 +158,94 @@ export default function Findings() {
             : "No findings match the current filter."}
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {filtered.map((r, i) => (
-            <div
-              key={r.captureId + r.finding.id + i}
-              className="border-border/70 hover:border-border bg-card/40 rounded-sm border px-3.5 py-2.5 transition-colors"
-            >
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <SeverityBadge severity={r.finding.severity} />
-                <span className="sms-mono text-[11px] font-semibold">{r.finding.ruleId}</span>
-                <span className="text-xs font-medium">{r.finding.title}</span>
-                <span className="sms-mono text-muted-foreground text-[10px]">
-                  session {r.finding.sessionId}
-                </span>
-                <EvidenceChip
-                  state={r.finding.confidenceState as never}
-                  className="ml-auto hidden sm:inline-flex"
-                />
-              </div>
-              <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
-                <span className="text-foreground/80 font-medium">Evidence </span>
-                {r.finding.evidenceSummary}
-              </p>
-              <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                <span className="text-primary text-xs">
-                  <span className="sms-label text-primary/70 mr-1.5">Action</span>
-                  {r.finding.recommendedAction}
-                </span>
-                <Link
-                  to={"/captures/" + r.captureId}
-                  className="sms-mono text-muted-foreground hover:text-primary shrink-0 text-[10px] transition-colors"
-                >
-                  {r.captureName} →
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+        <FlushPanel
+          label="Finding register"
+          meta={filtered.length + " of " + rows.length + " findings"}
+          bodyClassName="overflow-x-auto"
+        >
+          <table className="w-full min-w-[860px] text-sm">
+            <thead>
+              <tr className="border-border/80 bg-muted/30 border-b">
+                <th className="sms-label text-muted-foreground px-3 py-2 text-left">Severity</th>
+                <th className="sms-label text-muted-foreground px-3 py-2 text-left">Finding</th>
+                <th className="sms-label text-muted-foreground px-3 py-2 text-left">Evidence</th>
+                <th className="sms-label text-muted-foreground hidden px-3 py-2 text-left lg:table-cell">
+                  Source
+                </th>
+                <th className="sms-label text-muted-foreground px-3 py-2 text-left">Capture</th>
+              </tr>
+            </thead>
+            <tbody className="divide-border/70 divide-y">
+              {filtered.map((r, i) => {
+                const isAi = r.finding.detectedBy === "ml";
+                return (
+                  <tr
+                    key={r.captureId + r.finding.id + i}
+                    className="group align-top transition-colors hover:bg-accent/40"
+                  >
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-col items-start gap-1.5">
+                        <StatusBadge severity={r.finding.severity} />
+                        <SeverityBadge severity={r.finding.severity} className="lg:hidden" />
+                      </div>
+                    </td>
+                    <td className="max-w-[260px] px-3 py-2.5">
+                      <div className="sms-mono flex items-center gap-1.5 text-[11px] font-semibold">
+                        {r.finding.ruleId}
+                        <span
+                          className={cn(
+                            "sms-mono rounded-[2px] border px-1 text-[8px] tracking-[0.08em] uppercase",
+                            isAi
+                              ? "border-(--sms-low)/40 text-(--sms-low)"
+                              : "border-border text-muted-foreground",
+                          )}
+                        >
+                          {isAi ? "ai-assessed" : "deterministic"}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 truncate text-xs font-medium" title={r.finding.title}>
+                        {r.finding.title}
+                      </div>
+                      <div className="sms-mono text-muted-foreground/70 mt-0.5 text-[10px]">
+                        session {r.finding.sessionId} · conf{" "}
+                        {Math.round(r.finding.confidence * 100)}%
+                      </div>
+                    </td>
+                    <td className="max-w-[300px] px-3 py-2.5">
+                      <p className="text-muted-foreground line-clamp-2 text-[11px] leading-relaxed">
+                        {r.finding.evidenceSummary}
+                      </p>
+                      <p className="text-muted-foreground/70 mt-0.5 line-clamp-1 text-[10px]">
+                        {r.finding.recommendedAction}
+                      </p>
+                    </td>
+                    <td className="hidden px-3 py-2.5 lg:table-cell">
+                      <span className="sms-mono text-muted-foreground text-[10px] uppercase tracking-[0.08em]">
+                        {isAi ? "ML model" : "Rule engine"}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <Link
+                        to={"/captures/" + r.captureId}
+                        className="sms-mono text-muted-foreground hover:text-primary inline-flex items-center gap-1 text-[11px] transition-colors"
+                      >
+                        {r.captureName}
+                        <span className="opacity-0 transition-opacity group-hover:opacity-100">
+                          →
+                        </span>
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </FlushPanel>
       )}
+      <p className="text-muted-foreground/70 mt-3 text-[11px] leading-relaxed">
+        Findings link to the capture record where the full evidence bundle — observed bytes,
+        timeline, and per-session risk rationale — can be inspected.
+      </p>
     </AppShell>
   );
 }

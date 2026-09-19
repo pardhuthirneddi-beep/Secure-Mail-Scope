@@ -2,20 +2,40 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AppShell } from "@/components/AppShell";
+import { TechCorner } from "@/components/sms-brand";
 import {
   FlushPanel,
   Panel,
+  PipelineFlow,
   RiskDot,
   StageProgress,
   StatStrip,
   CodeChip,
+  type FlowState,
 } from "@/components/sms-ui";
 import { Button } from "@/components/ui/button";
 import { STAGES, runPipeline, resultToReportSeed, DISCLAIMER } from "@/sms/pipeline";
 import { buildDemoPcap, listDemoScenarios } from "@/sms/scenarios";
-import { formatBytes, formatDuration, formatDate } from "@/lib/sms-format";
+import { formatBytes, formatDuration, formatDate, parseCapturePayload } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
-import { FileUp, Loader2, ChevronRight } from "lucide-react";
+import {
+  Activity,
+  ArrowLeftRight,
+  ArrowRight,
+  FileCheck2,
+  FileText,
+  FileUp,
+  Gauge,
+  Layers,
+  Loader2,
+  Lock,
+  Mail,
+  Mails,
+  Network,
+  ShieldAlert,
+  ShieldCheck,
+  Cpu,
+} from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -33,6 +53,127 @@ const RISK_DOT_TONE = {
   high: "bg-(--sms-high)",
   critical: "bg-(--sms-critical)",
 } as const;
+
+/* ----------------------------------------------------- pipeline visualization */
+
+/**
+ * The seven display stages of the analysis chain. Each maps onto the real
+ * pipeline stages (STAGES in sms/pipeline.ts) that the app actually reports
+ * progress for — nothing here is a fabricated processing step.
+ */
+const PIPELINE_VIEW = [
+  { id: "recon", label: "Session Reconstruction", icon: <Network className="size-4" />, stages: ["parse", "sessions"] },
+  { id: "proto", label: "Protocol Identification", icon: <Mail className="size-4" />, stages: ["proto"] },
+  { id: "tls", label: "TLS / STARTTLS Analysis", icon: <Lock className="size-4" />, stages: ["starttls", "tls"] },
+  { id: "cert", label: "Certificate Inspection", icon: <FileCheck2 className="size-4" />, stages: ["certs"] },
+  { id: "crypto", label: "Crypto Weakness Detection", icon: <ShieldAlert className="size-4" />, stages: ["rules"] },
+  { id: "ai", label: "AI Risk Assessment", icon: <Activity className="size-4" />, stages: ["ml"] },
+  { id: "report", label: "Report Generation", icon: <FileText className="size-4" />, stages: ["findings"] },
+];
+
+function pipelineStates(run: RunState): Record<string, FlowState> {
+  const states: Record<string, FlowState> = {};
+  const activeId = run.phase === "running" ? STAGES[run.stageIndex]?.id : undefined;
+  const activeIdx = activeId ? STAGES.findIndex((s) => s.id === activeId) : -1;
+  for (const view of PIPELINE_VIEW) {
+    const idxs = view.stages.map((sid) => STAGES.findIndex((s) => s.id === sid));
+    if (activeIdx < 0) {
+      states[view.id] = "pending";
+    } else if (idxs.every((i) => i < activeIdx)) {
+      states[view.id] = "done";
+    } else if (idxs.includes(activeIdx)) {
+      states[view.id] = "active";
+    } else {
+      states[view.id] = "pending";
+    }
+  }
+  return states;
+}
+
+/* ---------------------------------------------------------- posture helpers */
+
+const POSTURE_ROWS: Array<{ category: string; label: string }> = [
+  { category: "Transport Security", label: "Transport Security" },
+  { category: "TLS Configuration", label: "TLS Configuration" },
+  { category: "Certificate Security", label: "Certificate" },
+  { category: "Protocol Security", label: "STARTTLS" },
+  { category: "Anomaly Status", label: "Cryptographic Anomalies" },
+];
+
+type PostureStatus = "PASS" | "WARNING" | "CRITICAL" | "UNAVAILABLE";
+
+function postureStatus(score: number | null): PostureStatus {
+  if (score === null) return "UNAVAILABLE";
+  if (score >= 90) return "PASS";
+  if (score >= 50) return "WARNING";
+  return "CRITICAL";
+}
+
+const POSTURE_STATUS_CLASS: Record<PostureStatus, string> = {
+  PASS: "text-(--sms-healthy) border-(--sms-healthy)/40",
+  WARNING: "text-(--sms-medium) border-(--sms-medium)/40",
+  CRITICAL: "text-(--sms-critical) border-(--sms-critical)/40",
+  UNAVAILABLE: "text-muted-foreground border-border",
+};
+
+/* -------------------------------------------------------------- investigation
+   workflow chain — the "from packets to proof" story, one compact column. */
+
+const WORKFLOW = [
+  { label: "PCAP", icon: <FileUp className="size-3" /> },
+  { label: "Sessions", icon: <Layers className="size-3" /> },
+  { label: "Protocols", icon: <Mails className="size-3" /> },
+  { label: "TLS / STARTTLS", icon: <ArrowLeftRight className="size-3" /> },
+  { label: "Certificate", icon: <FileCheck2 className="size-3" /> },
+  { label: "Weakness", icon: <ShieldAlert className="size-3" /> },
+  { label: "Risk", icon: <Gauge className="size-3" /> },
+  { label: "Report", icon: <FileText className="size-3" /> },
+];
+
+function WorkflowChain({ className }: { className?: string }) {
+  return (
+    <ol className={cn("relative", className)}>
+      {WORKFLOW.map((step, i) => (
+        <li key={step.label} className="relative flex items-center gap-2.5 pb-3 last:pb-0">
+          {i < WORKFLOW.length - 1 && (
+            <span className="bg-(--sms-wave)/25 absolute top-4 bottom-0 left-[7px] w-px" />
+          )}
+          <span className="border-border/80 bg-card relative z-10 flex size-3.5 shrink-0 items-center justify-center rounded-[2px] border">
+            <span className="text-muted-foreground/80">{step.icon}</span>
+          </span>
+          <span className="sms-mono text-muted-foreground text-[11px]">{step.label}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/* ------------------------------------------------------------- feature strip */
+
+const FEATURES = [
+  {
+    title: "Evidence-First",
+    body: "Every important finding traceable to packet evidence.",
+    icon: <ShieldCheck className="size-4" />,
+  },
+  {
+    title: "AI-Assisted",
+    body: "AI used for analysis, anomaly detection and prioritization where applicable.",
+    icon: <Cpu className="size-4" />,
+  },
+  {
+    title: "Multi-Protocol",
+    body: "SMTP / IMAP / POP3.",
+    icon: <Mails className="size-4" />,
+  },
+  {
+    title: "Detailed Reports",
+    body: "Markdown / JSON, evidence-cited.",
+    icon: <FileText className="size-4" />,
+  },
+];
+
+/* ---------------------------------------------------------------------- page */
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -56,6 +197,13 @@ export default function Dashboard() {
     }
     return { findings, high, critical, sessions };
   }, [captures]);
+
+  // Latest analysis — real stored report from the most recent capture.
+  const latest = captures[0] ?? null;
+  const latestReport = useMemo(
+    () => (latest ? parseCapturePayload(latest.reportJson, latest.sessionsJson)?.report ?? null : null),
+    [latest],
+  );
 
   const analyze = async (
     buffer: ArrayBuffer,
@@ -134,6 +282,7 @@ export default function Dashboard() {
   };
 
   const running = run.phase === "running";
+  const flowStates = pipelineStates(run);
 
   return (
     <AppShell
@@ -163,6 +312,7 @@ export default function Dashboard() {
         }}
       />
 
+      {/* Forensic status modules */}
       <StatStrip
         items={[
           { label: "Captures", value: String(captures.length), tone: "info" },
@@ -180,12 +330,35 @@ export default function Dashboard() {
         ]}
       />
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-5">
-        {/* Intake panel */}
+      {/* Analysis pipeline — the connected stage chain */}
+      <Panel
+        label="Analysis pipeline"
+        meta={running && run.phase === "running" ? run.label : "idle · select a capture to begin"}
+        className="relative mt-4 overflow-hidden"
+        actions={
+          <span className="sms-mono text-muted-foreground/60 hidden text-[10px] sm:block">
+            pcap → evidence → session → protocol → tls → finding → risk → report
+          </span>
+        }
+      >
+        <TechCorner className="top-0 right-0" />
+        <PipelineFlow
+          className="py-1"
+          stages={PIPELINE_VIEW.map((v) => ({
+            id: v.id,
+            label: v.label,
+            icon: v.icon,
+            state: flowStates[v.id],
+          }))}
+        />
+      </Panel>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-12">
+        {/* Capture intake */}
         <Panel
           label="Capture intake"
           meta=".pcap / .pcapng · ≤ 64 MB"
-          className="lg:col-span-3"
+          className="lg:col-span-7"
         >
           <div
             role="button"
@@ -206,7 +379,7 @@ export default function Dashboard() {
               if (f) handleFile(f);
             }}
             className={cn(
-              "relative overflow-hidden rounded-sm border border-dashed px-6 py-9 text-center transition-colors",
+              "relative overflow-hidden rounded-sm border border-dashed px-6 py-8 text-center transition-colors",
               dragOver
                 ? "border-primary/70 bg-primary/5"
                 : "border-border hover:border-primary/40",
@@ -278,12 +451,101 @@ export default function Dashboard() {
           </div>
         </Panel>
 
+        {/* Security posture — real per-capture scores; unavailable when not measurable */}
+        <Panel
+          label="Security posture"
+          meta={latestReport ? "latest capture · score share of sessions" : "no capture analyzed"}
+          className="lg:col-span-5"
+        >
+          <div className="divide-border/60 divide-y">
+            {POSTURE_ROWS.map((row) => {
+              const real = latestReport?.posture.find((p) => p.category === row.category);
+              const status = postureStatus(real ? real.score : null);
+              return (
+                <div key={row.category} className="flex items-center justify-between gap-3 py-2">
+                  <div className="min-w-0">
+                    <div className="text-xs font-medium">{row.label}</div>
+                    {real ? (
+                      <div className="sms-mono text-muted-foreground/70 mt-0.5 truncate text-[10px]">
+                        {real.score}% · {real.basisCount} session{real.basisCount === 1 ? "" : "s"}
+                      </div>
+                    ) : (
+                      <div className="sms-mono text-muted-foreground/50 mt-0.5 truncate text-[10px]">
+                        {latestReport
+                          ? "not measurable in this capture"
+                          : "awaiting first analysis"}
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className={cn(
+                      "sms-mono shrink-0 rounded-[2px] border px-1.5 py-px text-[9px] tracking-[0.1em] font-semibold",
+                      POSTURE_STATUS_CLASS[status],
+                    )}
+                  >
+                    {status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </Panel>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-12">
+        {/* Latest analysis */}
+        <Panel label="Latest analysis" meta={latest ? formatDate(latest.uploadedAt) : "none yet"} className="lg:col-span-5">
+          {latest ? (
+            <div className="flex items-center gap-3">
+              <span className="border-border/80 bg-muted/40 text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-[3px] border">
+                <FileText className="size-4.5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="sms-mono flex items-center gap-2 truncate text-xs font-semibold">
+                  {latest.name}
+                  <span className="text-(--sms-healthy) border-(--sms-healthy)/40 inline-flex shrink-0 items-center gap-1 rounded-[2px] border px-1.5 py-px text-[9px] tracking-[0.1em] uppercase">
+                    <span className="bg-(--sms-healthy) size-1 rounded-full" />
+                    Analyzed
+                  </span>
+                </div>
+                <div className="text-muted-foreground mt-1 truncate text-[11px]">
+                  {latest.sessionCount} session{latest.sessionCount === 1 ? "" : "s"} ·{" "}
+                  {latest.findingCount} finding{latest.findingCount === 1 ? "" : "s"} ·{" "}
+                  {formatBytes(latest.sizeBytes)} · {formatDuration(latest.durationSec)}
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 shrink-0 gap-1.5 text-[11px]"
+                onClick={() => navigate("/captures/" + latest._id)}
+              >
+                Open
+                <ArrowRight className="size-3" />
+              </Button>
+            </div>
+          ) : (
+            <p className="text-muted-foreground py-4 text-center text-xs">
+              No captures analyzed yet — the latest report will appear here.
+            </p>
+          )}
+        </Panel>
+
+        {/* Investigation workflow */}
+        <Panel
+          label="Investigation workflow"
+          meta="from packets to proof"
+          className="lg:col-span-3"
+        >
+          <WorkflowChain />
+        </Panel>
+
         {/* Recent captures */}
         <FlushPanel
           label="Recent captures"
           meta={captures.length > 0 ? captures.length + " analyzed" : "empty"}
-          className="lg:col-span-2"
-          bodyClassName="max-h-[480px] overflow-y-auto"
+          className="lg:col-span-4"
+          bodyClassName="max-h-[320px] overflow-y-auto"
         >
           {captures.length === 0 ? (
             <p className="text-muted-foreground px-4 py-8 text-center text-xs leading-relaxed">
@@ -324,8 +586,6 @@ export default function Dashboard() {
                       </span>
                       <span className="text-muted-foreground/50">·</span>
                       <span>{formatBytes(c.sizeBytes)}</span>
-                      <span className="text-muted-foreground/50">·</span>
-                      <span>{formatDuration(c.durationSec)}</span>
                     </div>
                   </button>
                 </li>
@@ -335,6 +595,19 @@ export default function Dashboard() {
         </FlushPanel>
       </div>
 
+      {/* Capability strip — visual explanations of existing behavior */}
+      <div className="border-border/70 bg-card/40 mt-4 grid gap-px overflow-hidden rounded-sm border bg-border/40 sm:grid-cols-2 xl:grid-cols-4">
+        {FEATURES.map((f) => (
+          <div key={f.title} className="bg-card/60 flex items-start gap-3 px-4 py-3.5">
+            <span className="text-primary/80 mt-0.5 shrink-0">{f.icon}</span>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold">{f.title}</div>
+              <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">{f.body}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="border-border/70 bg-card/40 mt-4 rounded-sm border px-4 py-3">
         <p className="text-muted-foreground text-xs leading-relaxed">
           <span className="sms-label text-foreground mr-2">Scope</span>
@@ -342,7 +615,7 @@ export default function Dashboard() {
         </p>
       </div>
       <div className="sms-mono text-muted-foreground/70 mt-3 flex items-center gap-1.5 text-[10px]">
-        <ChevronRight className="size-3" />
+        <CodeChip>SMS</CodeChip>
         workstation ready · {formatDate(Date.now())}
       </div>
     </AppShell>
