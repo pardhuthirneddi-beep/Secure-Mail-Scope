@@ -18,15 +18,26 @@ const CaptureDetail = lazy(() => import("./pages/CaptureDetail.tsx"));
 const Findings = lazy(() => import("./pages/Findings.tsx"));
 const Reports = lazy(() => import("./pages/Reports.tsx"));
 const TestLab = lazy(() => import("./pages/TestLab.tsx"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));
-
-// Simple loading fallback for route transitions
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));// Simple loading fallback for route transitions — brand voice, amber pulse
 function RouteLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="sms-mono text-muted-foreground text-xs">Loading workstation…</div>
+      <div className="flex items-center gap-2.5">
+        <span className="bg-primary size-1.5 animate-pulse rounded-full" />
+        <span className="sms-mono text-muted-foreground text-xs tracking-[0.08em] uppercase">
+          Loading workstation
+        </span>
+      </div>
     </div>
-  );
+  );}
+
+/** Route changes start at the top — long capture pages never land mid-scroll. */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [pathname]);
+  return null;
 }
 
 /** Silent error boundary — if VlyToolbar crashes it renders nothing instead of
@@ -122,6 +133,7 @@ createRoot(document.getElementById("root")!).render(
       <ConvexAuthProvider client={convex}>
         <BrowserRouter>
           <RouteSyncer />
+          <ScrollToTop />
           <Suspense fallback={<RouteLoading />}>
             <Routes>
               <Route path="/" element={<Landing />} />
