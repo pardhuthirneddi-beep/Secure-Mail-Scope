@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMark, BrandWordmark, ForensicWaves, TechCorner } from "@/components/sms-brand";
+import { DecryptedText } from "@/components/DecryptedText";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "react-router";
 
@@ -141,8 +142,22 @@ export default function Landing() {
               transition={{ ...fadeUp.transition, delay: 0.05 }}
               className="mt-4 max-w-2xl text-3xl leading-[1.12] font-bold tracking-tight sm:text-[2.75rem]"
             >
-              From packets
-              <span className="text-primary"> to proof.</span>
+              <DecryptedText
+                text="From packets "
+                animateOn="view"
+                speed={28}
+                maxIterations={2}
+                encryptedClassName="text-(--sms-wave)/45"
+              />
+              <span className="text-primary">
+                <DecryptedText
+                  text="to proof."
+                  animateOn="view"
+                  speed={28}
+                  maxIterations={2}
+                  encryptedClassName="text-(--sms-wave)/45"
+                />
+              </span>
             </motion.h1>
             <motion.p
               {...fadeUp}
