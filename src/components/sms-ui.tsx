@@ -78,10 +78,10 @@ export function FlushPanel({
 
 const STAT_TONE = {
   neutral: "text-foreground",
-  danger: "text-[--sms-critical]",
-  warning: "text-[--sms-medium]",
-  good: "text-[--sms-healthy]",
-  info: "text-[--sms-low]",
+  danger: "text-(--sms-critical)",
+  warning: "text-(--sms-medium)",
+  good: "text-(--sms-healthy)",
+  info: "text-(--sms-low)",
 } as const;
 
 export function StatStrip({
@@ -111,7 +111,7 @@ export function StatStrip({
           key={s.label}
           className={cn(
             "px-4 py-3",
-            i > 0 && "sm:border-l sm:border-[--border]",
+            i > 0 && "sm:border-l sm:border-(--border)",
             i >= 2 && "border-t sm:border-t-0",
           )}
         >
@@ -156,11 +156,11 @@ export function SeverityBadge({
 /** 6px square status marker — instrumental, color-semantic. */
 export function RiskDot({ level, className }: { level: RiskLevel; className?: string }) {
   const color = {
-    healthy: "bg-[--sms-healthy]",
-    low: "bg-[--sms-low]",
-    medium: "bg-[--sms-medium]",
-    high: "bg-[--sms-high]",
-    critical: "bg-[--sms-critical]",
+    healthy: "bg-(--sms-healthy)",
+    low: "bg-(--sms-low)",
+    medium: "bg-(--sms-medium)",
+    high: "bg-(--sms-high)",
+    critical: "bg-(--sms-critical)",
   }[level];
   return (
     <span
@@ -207,9 +207,9 @@ export function EvidenceChip({
       }
       className={cn(
         "sms-mono inline-flex items-center gap-1 rounded-sm border px-1.5 py-px text-[10px] tracking-[0.06em] uppercase",
-        state === "verified" && "border-[--sms-healthy]/40 text-[--sms-healthy]",
-        state === "requires-investigation" && "border-[--sms-medium]/40 text-[--sms-medium]",
-        state === "ai-assessed" && "border-[--sms-low]/40 text-[--sms-low]",
+        state === "verified" && "border-(--sms-healthy)/40 text-(--sms-healthy)",
+        state === "requires-investigation" && "border-(--sms-medium)/40 text-(--sms-medium)",
+        state === "ai-assessed" && "border-(--sms-low)/40 text-(--sms-low)",
         (state === "unavailable" || state === "derived") && "border-border text-muted-foreground",
         className,
       )}
@@ -254,10 +254,10 @@ export function StatusDot({
   className?: string;
 }) {
   const color = {
-    info: "bg-[--sms-low]",
-    good: "bg-[--sms-healthy]",
-    warning: "bg-[--sms-medium]",
-    danger: "bg-[--sms-critical]",
+    info: "bg-(--sms-low)",
+    good: "bg-(--sms-healthy)",
+    warning: "bg-(--sms-medium)",
+    danger: "bg-(--sms-critical)",
   }[tone];
   return (
     <span className={cn("relative inline-flex size-2", className)}>
@@ -281,10 +281,10 @@ export function Meter({
   className?: string;
 }) {
   const color = {
-    info: "bg-[--sms-low]",
-    good: "bg-[--sms-healthy]",
-    warning: "bg-[--sms-medium]",
-    danger: "bg-[--sms-critical]",
+    info: "bg-(--sms-low)",
+    good: "bg-(--sms-healthy)",
+    warning: "bg-(--sms-medium)",
+    danger: "bg-(--sms-critical)",
   }[tone];
   return (
     <div className={cn("bg-muted h-1 w-full overflow-hidden rounded-[1px]", className)}>
@@ -393,7 +393,7 @@ export function StageProgress({
             <span
               className={cn(
                 "flex size-3.5 shrink-0 items-center justify-center rounded-[2px] border text-[8px] leading-none",
-                done && "border-[--sms-healthy]/50 bg-[--sms-healthy]/15 text-[--sms-healthy]",
+                done && "border-(--sms-healthy)/50 bg-(--sms-healthy)/15 text-(--sms-healthy)",
                 active && "border-primary/60 bg-primary/10",
                 !done && !active && "border-border text-transparent",
               )}

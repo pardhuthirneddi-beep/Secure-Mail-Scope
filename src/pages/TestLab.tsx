@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 import { Loader2, Play } from "lucide-react";
 
 const RISK_TEXT = {
-  healthy: "text-[--sms-healthy]",
-  low: "text-[--sms-low]",
-  medium: "text-[--sms-medium]",
-  high: "text-[--sms-high]",
-  critical: "text-[--sms-critical]",
+  healthy: "text-(--sms-healthy)",
+  low: "text-(--sms-low)",
+  medium: "text-(--sms-medium)",
+  high: "text-(--sms-high)",
+  critical: "text-(--sms-critical)",
 } as const;
 
 /**
@@ -127,12 +127,12 @@ export default function TestLab() {
                         </td>
                         <td className="sms-mono px-3 py-2.5 text-[11px]">
                           {row.detected.length > 0 ? (
-                            <span className="text-[--sms-healthy]">{row.detected.join(", ")}</span>
+                            <span className="text-(--sms-healthy)">{row.detected.join(", ")}</span>
                           ) : (
                             <span className="text-muted-foreground">none</span>
                           )}
                           {row.extra.length > 0 && (
-                            <div className="text-[--sms-low] mt-0.5">+{row.extra.join(", ")}</div>
+                            <div className="text-(--sms-low) mt-0.5">+{row.extra.join(", ")}</div>
                           )}
                         </td>
                         <td className="sms-mono px-3 py-2.5 text-[11px]">
@@ -140,20 +140,20 @@ export default function TestLab() {
                             {row.riskLevel ?? "—"}
                           </span>
                           {row.riskMatches === false && (
-                            <span className="text-[--sms-medium]"> ≠ expected</span>
+                            <span className="text-(--sms-medium)"> ≠ expected</span>
                           )}
                         </td>
                         <td className="px-3 py-2.5">
                           {row.error ? (
-                            <span className="sms-mono text-[--sms-critical] text-[10px]">
+                            <span className="sms-mono text-(--sms-critical) text-[10px]">
                               error
                             </span>
                           ) : clean ? (
-                            <span className="sms-mono text-[--sms-healthy] text-[10px] tracking-[0.08em] uppercase">
+                            <span className="sms-mono text-(--sms-healthy) text-[10px] tracking-[0.08em] uppercase">
                               pass
                             </span>
                           ) : (
-                            <span className="sms-mono text-[--sms-medium] text-[10px] tracking-[0.08em] uppercase">
+                            <span className="sms-mono text-(--sms-medium) text-[10px] tracking-[0.08em] uppercase">
                               review
                             </span>
                           )}

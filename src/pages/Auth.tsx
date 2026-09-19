@@ -115,7 +115,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
       {/* Auth Content */}
       <div className="flex flex-1 items-center justify-center px-4">
         <div className="flex h-full w-full max-w-sm flex-col items-center justify-center">
-        <Card className="w-full min-w-[350px] border-border/80 bg-card/60 pb-0 shadow-none backdrop-blur-sm">
+        <Card className="w-full min-w-[350px] border-border/80 bg-card pb-0 shadow-none">
           {step === "signIn" ? (
             <>
               <CardHeader className="text-center">

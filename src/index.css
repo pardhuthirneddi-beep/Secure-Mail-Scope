@@ -53,92 +53,101 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* CHANGE VALUES FOR THEME */
+/*
+ * GRAPHITE FORENSIC
+ *
+ * A monochrome graphite scale carries the interface; color appears only as
+ * semantic status. Near-black graphite background, gunmetal panels, warm-white
+ * type, muted gray secondary text. Restrained green = verified healthy,
+ * amber = warning, muted red = critical. No blues, no neon, no gradients.
+ * The interactive accent is warm white itself — the UI is grayscale until
+ * evidence says otherwise.
+ */
 :root {
   --radius: 0.25rem;
-  --background: oklch(0.13 0.014 235);
-  --foreground: oklch(0.93 0.006 240);
-  --card: oklch(0.16 0.016 235);
-  --card-foreground: oklch(0.93 0.006 240);
-  --popover: oklch(0.17 0.016 235);
-  --popover-foreground: oklch(0.93 0.006 240);
-  --primary: oklch(0.82 0.11 205);
-  --primary-foreground: oklch(0.14 0.02 235);
-  --secondary: oklch(0.23 0.018 235);
-  --secondary-foreground: oklch(0.9 0.008 240);
-  --muted: oklch(0.2 0.016 235);
-  --muted-foreground: oklch(0.63 0.02 235);
-  --accent: oklch(0.23 0.018 235);
-  --accent-foreground: oklch(0.9 0.008 240);
-  --destructive: oklch(0.62 0.21 25);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.82 0.11 205);
-  --chart-1: oklch(0.82 0.11 205);
-  --chart-2: oklch(0.75 0.13 85);
-  --chart-3: oklch(0.65 0.21 25);
-  --chart-4: oklch(0.72 0.15 160);
-  --chart-5: oklch(0.65 0.13 250);
-  --sidebar: oklch(0.12 0.014 235);
-  --sidebar-foreground: oklch(0.93 0.006 240);
-  --sidebar-primary: oklch(0.82 0.11 205);
-  --sidebar-primary-foreground: oklch(0.14 0.02 235);
-  --sidebar-accent: oklch(0.23 0.018 235);
-  --sidebar-accent-foreground: oklch(0.9 0.008 240);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.82 0.11 205);
-  /* Severity palette — red reserved for critical/high, amber for medium,
-     cyan for technical/informational, green only for verified healthy. */
-  --sms-critical: oklch(0.63 0.21 25);
-  --sms-high: oklch(0.68 0.16 50);
-  --sms-medium: oklch(0.78 0.13 85);
-  --sms-low: oklch(0.8 0.1 205);
-  --sms-info: oklch(0.65 0.02 240);
-  --sms-healthy: oklch(0.75 0.14 160);
-  --sms-grid: oklch(1 0 0 / 4%);
+  --background: oklch(0.125 0.004 260);
+  --foreground: oklch(0.94 0.005 85);
+  --card: oklch(0.165 0.004 260);
+  --card-foreground: oklch(0.94 0.005 85);
+  --popover: oklch(0.17 0.004 260);
+  --popover-foreground: oklch(0.94 0.005 85);
+  --primary: oklch(0.93 0.004 85);
+  --primary-foreground: oklch(0.14 0.004 260);
+  --secondary: oklch(0.22 0.004 260);
+  --secondary-foreground: oklch(0.9 0.004 85);
+  --muted: oklch(0.205 0.004 260);
+  --muted-foreground: oklch(0.62 0.005 85);
+  --accent: oklch(0.22 0.004 260);
+  --accent-foreground: oklch(0.9 0.004 85);
+  --destructive: oklch(0.58 0.15 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 11%);
+  --ring: oklch(0.93 0.004 85);
+  --chart-1: oklch(0.7 0.11 150);
+  --chart-2: oklch(0.75 0.1 80);
+  --chart-3: oklch(0.58 0.15 25);
+  --chart-4: oklch(0.62 0.005 85);
+  --chart-5: oklch(0.45 0.006 260);
+  --sidebar: oklch(0.115 0.004 260);
+  --sidebar-foreground: oklch(0.94 0.005 85);
+  --sidebar-primary: oklch(0.93 0.004 85);
+  --sidebar-primary-foreground: oklch(0.14 0.004 260);
+  --sidebar-accent: oklch(0.22 0.004 260);
+  --sidebar-accent-foreground: oklch(0.9 0.004 85);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.93 0.004 85);
+  /* Severity palette — the only color in the interface, and only for status:
+     green = verified healthy, amber = warning, muted red = critical. */
+  --sms-critical: oklch(0.58 0.15 25);
+  --sms-high: oklch(0.62 0.12 45);
+  --sms-medium: oklch(0.75 0.1 80);
+  --sms-low: oklch(0.66 0.05 150);
+  --sms-info: oklch(0.62 0.005 85);
+  --sms-healthy: oklch(0.7 0.11 150);
+  --sms-grid: oklch(1 0 0 / 3%);
 }
 
 .dark {
   /* The workstation is intentionally always-dark; .dark mirrors :root so
      shadcn components keep working if a dark class is applied. */
-  --background: oklch(0.13 0.014 235);
-  --foreground: oklch(0.93 0.006 240);
-  --card: oklch(0.16 0.016 235);
-  --card-foreground: oklch(0.93 0.006 240);
-  --popover: oklch(0.17 0.016 235);
-  --popover-foreground: oklch(0.93 0.006 240);
-  --primary: oklch(0.82 0.11 205);
-  --primary-foreground: oklch(0.14 0.02 235);
-  --secondary: oklch(0.23 0.018 235);
-  --secondary-foreground: oklch(0.9 0.008 240);
-  --muted: oklch(0.2 0.016 235);
-  --muted-foreground: oklch(0.63 0.02 235);
-  --accent: oklch(0.23 0.018 235);
-  --accent-foreground: oklch(0.9 0.008 240);
-  --destructive: oklch(0.62 0.21 25);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.82 0.11 205);
-  --chart-1: oklch(0.82 0.11 205);
-  --chart-2: oklch(0.75 0.13 85);
-  --chart-3: oklch(0.65 0.21 25);
-  --chart-4: oklch(0.72 0.15 160);
-  --chart-5: oklch(0.65 0.13 250);
-  --sidebar: oklch(0.12 0.014 235);
-  --sidebar-foreground: oklch(0.93 0.006 240);
-  --sidebar-primary: oklch(0.82 0.11 205);
-  --sidebar-primary-foreground: oklch(0.14 0.02 235);
-  --sidebar-accent: oklch(0.23 0.018 235);
-  --sidebar-accent-foreground: oklch(0.9 0.008 240);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.82 0.11 205);
-  --sms-critical: oklch(0.63 0.21 25);
-  --sms-high: oklch(0.68 0.16 50);
-  --sms-medium: oklch(0.78 0.13 85);
-  --sms-low: oklch(0.8 0.1 205);
-  --sms-info: oklch(0.65 0.02 240);
-  --sms-healthy: oklch(0.75 0.14 160);
-  --sms-grid: oklch(1 0 0 / 4%);
+  --background: oklch(0.125 0.004 260);
+  --foreground: oklch(0.94 0.005 85);
+  --card: oklch(0.165 0.004 260);
+  --card-foreground: oklch(0.94 0.005 85);
+  --popover: oklch(0.17 0.004 260);
+  --popover-foreground: oklch(0.94 0.005 85);
+  --primary: oklch(0.93 0.004 85);
+  --primary-foreground: oklch(0.14 0.004 260);
+  --secondary: oklch(0.22 0.004 260);
+  --secondary-foreground: oklch(0.9 0.004 85);
+  --muted: oklch(0.205 0.004 260);
+  --muted-foreground: oklch(0.62 0.005 85);
+  --accent: oklch(0.22 0.004 260);
+  --accent-foreground: oklch(0.9 0.004 85);
+  --destructive: oklch(0.58 0.15 25);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 11%);
+  --ring: oklch(0.93 0.004 85);
+  --chart-1: oklch(0.7 0.11 150);
+  --chart-2: oklch(0.75 0.1 80);
+  --chart-3: oklch(0.58 0.15 25);
+  --chart-4: oklch(0.62 0.005 85);
+  --chart-5: oklch(0.45 0.006 260);
+  --sidebar: oklch(0.115 0.004 260);
+  --sidebar-foreground: oklch(0.94 0.005 85);
+  --sidebar-primary: oklch(0.93 0.004 85);
+  --sidebar-primary-foreground: oklch(0.14 0.004 260);
+  --sidebar-accent: oklch(0.22 0.004 260);
+  --sidebar-accent-foreground: oklch(0.9 0.004 85);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.93 0.004 85);
+  --sms-critical: oklch(0.58 0.15 25);
+  --sms-high: oklch(0.62 0.12 45);
+  --sms-medium: oklch(0.75 0.1 80);
+  --sms-low: oklch(0.66 0.05 150);
+  --sms-info: oklch(0.62 0.005 85);
+  --sms-healthy: oklch(0.7 0.11 150);
+  --sms-grid: oklch(1 0 0 / 3%);
 }
 
 @layer base {
@@ -164,7 +173,7 @@
 }
 
 @layer utilities {
-  /* Faint blueprint grid used on hero surfaces */
+  /* Faint engineering grid used on hero surfaces */
   .sms-grid-bg {
     background-image:
       linear-gradient(to right, var(--sms-grid) 1px, transparent 1px),
@@ -180,22 +189,8 @@
     font-size: 10px;
     line-height: 1.2;
     font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-  }
-  /* Hairline top accent for panels */
-  .sms-rule {
-    position: relative;
-  }
-  .sms-rule::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 0;
-    width: 2.5rem;
-    height: 1px;
-    background: var(--primary);
-    opacity: 0.7;
   }
   /* One restrained ambient motion: the analysis scanline */
   @keyframes sms-scan {

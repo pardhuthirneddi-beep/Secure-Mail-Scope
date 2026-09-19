@@ -31,19 +31,19 @@ export function formatDate(ms: number): string {
 }
 
 const SEVERITY_TOKEN: Record<Severity, string> = {
-  critical: "text-[--sms-critical] border-[--sms-critical]/40 bg-[--sms-critical]/10",
-  high: "text-[--sms-high] border-[--sms-high]/40 bg-[--sms-high]/10",
-  medium: "text-[--sms-medium] border-[--sms-medium]/40 bg-[--sms-medium]/10",
-  low: "text-[--sms-low] border-[--sms-low]/40 bg-[--sms-low]/10",
+  critical: "text-(--sms-critical) border-(--sms-critical)/40 bg-(--sms-critical)/10",
+  high: "text-(--sms-high) border-(--sms-high)/40 bg-(--sms-high)/10",
+  medium: "text-(--sms-medium) border-(--sms-medium)/40 bg-(--sms-medium)/10",
+  low: "text-(--sms-low) border-(--sms-low)/40 bg-(--sms-low)/10",
   info: "text-muted-foreground border-border bg-muted",
 };
 
 const RISK_TOKEN: Record<RiskLevel, string> = {
-  healthy: "text-[--sms-healthy] border-[--sms-healthy]/40 bg-[--sms-healthy]/10",
-  low: "text-[--sms-low] border-[--sms-low]/40 bg-[--sms-low]/10",
-  medium: "text-[--sms-medium] border-[--sms-medium]/40 bg-[--sms-medium]/10",
-  high: "text-[--sms-high] border-[--sms-high]/40 bg-[--sms-high]/10",
-  critical: "text-[--sms-critical] border-[--sms-critical]/40 bg-[--sms-critical]/10",
+  healthy: "text-(--sms-healthy) border-(--sms-healthy)/40 bg-(--sms-healthy)/10",
+  low: "text-(--sms-low) border-(--sms-low)/40 bg-(--sms-low)/10",
+  medium: "text-(--sms-medium) border-(--sms-medium)/40 bg-(--sms-medium)/10",
+  high: "text-(--sms-high) border-(--sms-high)/40 bg-(--sms-high)/10",
+  critical: "text-(--sms-critical) border-(--sms-critical)/40 bg-(--sms-critical)/10",
 };
 
 export function severityClass(s: Severity): string {

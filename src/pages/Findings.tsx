@@ -21,10 +21,10 @@ interface Row {
 const SEVERITIES: Severity[] = ["critical", "high", "medium", "low", "info"];
 
 const SEV_COUNT_CLASS: Record<Severity, string> = {
-  critical: "text-[--sms-critical] border-[--sms-critical]/40",
-  high: "text-[--sms-high] border-[--sms-high]/40",
-  medium: "text-[--sms-medium] border-[--sms-medium]/40",
-  low: "text-[--sms-low] border-[--sms-low]/40",
+  critical: "text-(--sms-critical) border-(--sms-critical)/40",
+  high: "text-(--sms-high) border-(--sms-high)/40",
+  medium: "text-(--sms-medium) border-(--sms-medium)/40",
+  low: "text-(--sms-low) border-(--sms-low)/40",
   info: "text-muted-foreground border-border",
 };
 

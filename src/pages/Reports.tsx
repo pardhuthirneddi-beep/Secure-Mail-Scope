@@ -15,11 +15,11 @@ import { Link } from "react-router";
 import { toast } from "sonner";
 
 const RISK_DOT_TONE = {
-  healthy: "bg-[--sms-healthy]",
-  low: "bg-[--sms-low]",
-  medium: "bg-[--sms-medium]",
-  high: "bg-[--sms-high]",
-  critical: "bg-[--sms-critical]",
+  healthy: "bg-(--sms-healthy)",
+  low: "bg-(--sms-low)",
+  medium: "bg-(--sms-medium)",
+  high: "bg-(--sms-high)",
+  critical: "bg-(--sms-critical)",
 } as const;
 
 export default function Reports() {
@@ -95,7 +95,7 @@ export default function Reports() {
                       />
                       <span className="truncate">{c.name}</span>
                       {c.isDemo && (
-                        <span className="text-[--sms-medium] shrink-0 rounded-[2px] border border-[--sms-medium]/40 px-1 text-[9px] uppercase">
+                        <span className="text-(--sms-medium) shrink-0 rounded-[2px] border border-(--sms-medium)/40 px-1 text-[9px] uppercase">
                           demo
                         </span>
                       )}

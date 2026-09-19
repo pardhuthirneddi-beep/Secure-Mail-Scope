@@ -57,10 +57,10 @@ function formatTime(ts: number): string {
 /* ------------------------------------------------------------------ badges */
 
 const SEV_BG = {
-  critical: "bg-[--sms-critical]",
-  high: "bg-[--sms-high]",
-  medium: "bg-[--sms-medium]",
-  low: "bg-[--sms-low]",
+  critical: "bg-(--sms-critical)",
+  high: "bg-(--sms-high)",
+  medium: "bg-(--sms-medium)",
+  low: "bg-(--sms-low)",
   info: "bg-muted",
 } as const;
 
@@ -142,11 +142,11 @@ function SessionView({
                 "sms-mono text-lg leading-none font-semibold tracking-tight",
                 risk &&
                   ({
-                    healthy: "text-[--sms-healthy]",
-                    low: "text-[--sms-low]",
-                    medium: "text-[--sms-medium]",
-                    high: "text-[--sms-high]",
-                    critical: "text-[--sms-critical]",
+                    healthy: "text-(--sms-healthy)",
+                    low: "text-(--sms-low)",
+                    medium: "text-(--sms-medium)",
+                    high: "text-(--sms-high)",
+                    critical: "text-(--sms-critical)",
                   }[risk.level]),
               )}
             >
@@ -160,11 +160,11 @@ function SessionView({
                   className={cn(
                     "h-full transition-[width] duration-500",
                     ({
-                      healthy: "bg-[--sms-healthy]",
-                      low: "bg-[--sms-low]",
-                      medium: "bg-[--sms-medium]",
-                      high: "bg-[--sms-high]",
-                      critical: "bg-[--sms-critical]",
+                      healthy: "bg-(--sms-healthy)",
+                      low: "bg-(--sms-low)",
+                      medium: "bg-(--sms-medium)",
+                      high: "bg-(--sms-high)",
+                      critical: "bg-(--sms-critical)",
                     }[risk.level]),
                   )}
                   style={{ width: risk.score + "%" }}
@@ -209,7 +209,7 @@ function SessionView({
             </div>
           ) : (
             <div className="mt-2.5">
-              <div className="text-[--sms-critical] sms-mono text-sm font-semibold">
+              <div className="text-(--sms-critical) sms-mono text-sm font-semibold">
                 No TLS layer
               </div>
               <p className="text-muted-foreground mt-1.5 text-[11px] leading-relaxed">
@@ -264,7 +264,7 @@ function SessionView({
                   <span
                     className={cn(
                       "absolute top-[3px] left-[-4px] size-1.5 rounded-[1px]",
-                      adverse ? "bg-[--sms-critical]" : "bg-primary/70",
+                      adverse ? "bg-(--sms-critical)" : "bg-primary/70",
                     )}
                   />
                   <div className="text-xs leading-snug font-medium">{ev.label}</div>

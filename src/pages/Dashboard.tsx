@@ -27,11 +27,11 @@ type RunState =
 const RISK_ORDER = ["healthy", "low", "medium", "high", "critical"];
 
 const RISK_DOT_TONE = {
-  healthy: "bg-[--sms-healthy]",
-  low: "bg-[--sms-low]",
-  medium: "bg-[--sms-medium]",
-  high: "bg-[--sms-high]",
-  critical: "bg-[--sms-critical]",
+  healthy: "bg-(--sms-healthy)",
+  low: "bg-(--sms-low)",
+  medium: "bg-(--sms-medium)",
+  high: "bg-(--sms-high)",
+  critical: "bg-(--sms-critical)",
 } as const;
 
 export default function Dashboard() {
@@ -225,7 +225,7 @@ export default function Dashboard() {
           </div>
 
           {run.phase === "error" && (
-            <div className="border-[--sms-critical]/40 bg-[--sms-critical]/10 text-[--sms-critical] mt-3 rounded-sm border px-3 py-2 text-xs">
+            <div className="border-(--sms-critical)/40 bg-(--sms-critical)/10 text-(--sms-critical) mt-3 rounded-sm border px-3 py-2 text-xs">
               {run.message}
             </div>
           )}
@@ -308,7 +308,7 @@ export default function Dashboard() {
                           )}
                         />
                         {c.isDemo && (
-                          <span className="text-[--sms-medium] shrink-0 rounded-[2px] border border-[--sms-medium]/40 px-1 text-[9px] uppercase">
+                          <span className="text-(--sms-medium) shrink-0 rounded-[2px] border border-(--sms-medium)/40 px-1 text-[9px] uppercase">
                             demo
                           </span>
                         )}

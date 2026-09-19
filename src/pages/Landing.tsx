@@ -173,32 +173,32 @@ export default function Landing() {
               </div>
               <div className="sms-mono divide-border/50 divide-y text-[11px] leading-relaxed">
                 <div className="flex items-center gap-3 px-3.5 py-2.5">
-                  <span className="bg-[--sms-healthy] size-1.5 shrink-0 rounded-[1px]" />
+                  <span className="bg-(--sms-healthy) size-1.5 shrink-0 rounded-[1px]" />
                   <span className="w-12 shrink-0 font-semibold">S-001</span>
                   <span className="text-muted-foreground min-w-0 truncate">
                     SMTP 587 · STARTTLS → TLS 1.3 · TLS_AES_256_GCM_SHA384 · valid certificate
                   </span>
-                  <span className="text-[--sms-healthy] ml-auto shrink-0 text-[10px] tracking-[0.08em]">
+                  <span className="text-(--sms-healthy) ml-auto shrink-0 text-[10px] tracking-[0.08em]">
                     HEALTHY
                   </span>
                 </div>
                 <div className="flex items-center gap-3 px-3.5 py-2.5">
-                  <span className="bg-[--sms-high] size-1.5 shrink-0 rounded-[1px]" />
+                  <span className="bg-(--sms-high) size-1.5 shrink-0 rounded-[1px]" />
                   <span className="w-12 shrink-0 font-semibold">S-002</span>
                   <span className="text-muted-foreground min-w-0 truncate">
                     SMTP 465 · implicit TLS 1.2 · certificate expired 2026-08-12
                   </span>
-                  <span className="text-[--sms-high] ml-auto shrink-0 text-[10px] tracking-[0.08em]">
+                  <span className="text-(--sms-high) ml-auto shrink-0 text-[10px] tracking-[0.08em]">
                     HIGH
                   </span>
                 </div>
                 <div className="flex items-center gap-3 px-3.5 py-2.5">
-                  <span className="bg-[--sms-critical] size-1.5 shrink-0 rounded-[1px]" />
+                  <span className="bg-(--sms-critical) size-1.5 shrink-0 rounded-[1px]" />
                   <span className="w-12 shrink-0 font-semibold">S-004</span>
                   <span className="text-muted-foreground min-w-0 truncate">
                     POP3 110 · no TLS record layer · credentials observed in cleartext
                   </span>
-                  <span className="text-[--sms-critical] ml-auto shrink-0 text-[10px] tracking-[0.08em]">
+                  <span className="text-(--sms-critical) ml-auto shrink-0 text-[10px] tracking-[0.08em]">
                     CRITICAL
                   </span>
                 </div>
