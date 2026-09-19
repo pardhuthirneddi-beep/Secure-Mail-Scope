@@ -7,11 +7,12 @@ export function useAuth() {
   const user = useQuery(api.users.currentUser);
   const { signIn, signOut } = useAuthActions();
 
-  // Derive isLoading directly from the dependencies instead of managing separate state
-  const isLoading = isAuthLoading || user === undefined;
-
   return {
-    isLoading,
+    /** True only while the auth handshake is in flight — never blocks on the
+     *  profile subscription, which can stall if the Convex socket idles out. */
+    isAuthLoading,
+    /** Convenience flag for callers that need a profile before rendering. */
+    isLoading: isAuthLoading || user === undefined,
     isAuthenticated,
     user,
     signIn,
