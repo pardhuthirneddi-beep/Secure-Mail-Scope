@@ -10,20 +10,35 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
 
-// Lazy load route components for better code splitting. Each import is
-// wrapped in a one-shot retry: after a redeploy, a stale page can reference a
-// renamed chunk that 404s once — retrying after the new build settles loads
-// the route instead of leaving navigation stuck on the fallback.
+// Lazy load route components for better code splitting.
+//
+// Chunk-load failures after a redeploy are unrecoverable from inside the stale
+// bundle: the old chunk filename no longer exists on the server, so merely
+// retrying the same import would 404 again forever. The only correct recovery
+// is a full page reload, which fetches the fresh index.html and its new chunk
+// graph. The requested route lives in the URL (BrowserRouter), so the reload
+// lands exactly where the user clicked. A sessionStorage flag allows exactly
+// one automatic reload — a genuine offline failure surfaces in the route
+// error boundary instead of looping.
+const CHUNK_RELOAD_FLAG = "sms:chunk-reload";
 function lazyRetry<T extends React.ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
 ) {
   return lazy(async () => {
     try {
-      return await factory();
+      const mod = await factory();
+      // Success — re-arm the one-shot reload for the *next* redeploy.
+      sessionStorage.removeItem(CHUNK_RELOAD_FLAG);
+      return mod;
     } catch (firstError) {
-      console.warn("[route] chunk load failed, retrying once", firstError);
-      await new Promise((r) => setTimeout(r, 300));
-      return await factory();
+      console.warn("[route] chunk load failed, scheduling recovery reload", firstError);
+      if (!sessionStorage.getItem(CHUNK_RELOAD_FLAG)) {
+        sessionStorage.setItem(CHUNK_RELOAD_FLAG, "1");
+        window.location.reload();
+      }
+      // Only reached when the reload was suppressed (offline, or already
+      // reloaded once) — the route error boundary shows the branded panel.
+      throw firstError;
     }
   });
 }
