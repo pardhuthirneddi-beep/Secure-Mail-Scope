@@ -11,7 +11,7 @@ import {
 } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
 import { FileDown, FileJson } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 
 const RISK_DOT_TONE = {
@@ -24,6 +24,7 @@ const RISK_DOT_TONE = {
 
 export default function Reports() {
   const captures = useQuery(api.captures.listCaptures, {}) ?? [];
+  const navigate = useNavigate();
 
   const downloadMarkdown = (c: (typeof captures)[number]) => {
     const payload = parseCapturePayload(c.reportJson, c.sessionsJson);
@@ -69,11 +70,12 @@ export default function Reports() {
       {captures.length === 0 ? (
         <div className="border-border/70 text-muted-foreground rounded-sm border border-dashed px-6 py-14 text-center text-sm">
           No reports yet. Every completed analysis produces a downloadable posture report with
-          per-finding evidence citations.{" "}
-          <Link to="/dashboard" className="text-primary underline">
-            Analyze a capture
-          </Link>
-          .
+          per-finding evidence citations.
+          <div className="mt-3">
+            <Button size="sm" onClick={() => navigate("/dashboard")}>
+              Analyze a capture
+            </Button>
+          </div>
         </div>
       ) : (
         <FlushPanel label="Report library" meta={captures.length + " reports"}>
@@ -83,7 +85,8 @@ export default function Reports() {
               return (
                 <li
                   key={c._id}
-                  className="hover:bg-accent/40 flex flex-col gap-3 px-3.5 py-3 transition-colors sm:flex-row sm:items-center sm:justify-between"
+                  onClick={() => navigate("/captures/" + c._id)}
+                  className="hover:bg-accent/40 flex cursor-pointer flex-col gap-3 px-3.5 py-3 transition-colors sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
                     <div className="sms-mono flex items-center gap-2 text-xs font-medium">
@@ -108,7 +111,10 @@ export default function Reports() {
                     )}
                   </div>
                   {report && (
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    <div
+                      className="flex shrink-0 items-center gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         variant="outline"

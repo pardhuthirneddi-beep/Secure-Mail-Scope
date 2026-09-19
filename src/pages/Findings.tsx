@@ -4,13 +4,14 @@ import { api } from "@/convex/_generated/api";
 import { AppShell } from "@/components/AppShell";
 import { FlushPanel, SeverityBadge } from "@/components/sms-ui";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { parseCapturePayload } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
 import type { Finding } from "@/sms/types";
 import type { Severity } from "@/sms/theme";
 import { SEVERITY_ORDER } from "@/sms/theme";
 import { Search } from "lucide-react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 interface Row {
   finding: Finding;
@@ -63,6 +64,7 @@ function StatusBadge({ severity }: { severity: Severity }) {
 
 export default function Findings() {
   const captures = useQuery(api.captures.listCaptures, {}) ?? [];
+  const navigate = useNavigate();
   const [severity, setSeverity] = useState<string>("all");
   const [search, setSearch] = useState("");
 
@@ -150,6 +152,11 @@ export default function Findings() {
       {captures.length === 0 ? (
         <div className="border-border/70 text-muted-foreground rounded-sm border border-dashed px-6 py-14 text-center text-sm">
           Analyze a capture first — findings from every capture are collected here.
+          <div className="mt-3">
+            <Button size="sm" onClick={() => navigate("/dashboard")}>
+              Go to Overview
+            </Button>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="border-border/70 text-muted-foreground rounded-sm border border-dashed px-6 py-14 text-center text-sm">
@@ -181,7 +188,8 @@ export default function Findings() {
                 return (
                   <tr
                     key={r.captureId + r.finding.id + i}
-                    className="group align-top transition-colors hover:bg-accent/40"
+                    className="group align-top cursor-pointer transition-colors hover:bg-accent/40"
+                    onClick={() => navigate("/captures/" + r.captureId)}
                   >
                     <td className="px-3 py-2.5">
                       <div className="flex flex-col items-start gap-1.5">
@@ -225,15 +233,27 @@ export default function Findings() {
                       </span>
                     </td>
                     <td className="px-3 py-2.5">
-                      <Link
-                        to={"/captures/" + r.captureId}
-                        className="sms-mono text-muted-foreground hover:text-primary inline-flex items-center gap-1 text-[11px] transition-colors"
+                      <span
+                        role="link"
+                        tabIndex={0}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate("/captures/" + r.captureId);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            navigate("/captures/" + r.captureId);
+                          }
+                        }}
+                        className="sms-mono text-muted-foreground hover:text-primary inline-flex cursor-pointer items-center gap-1 text-[11px] transition-colors"
                       >
                         {r.captureName}
                         <span className="opacity-0 transition-opacity group-hover:opacity-100">
                           →
                         </span>
-                      </Link>
+                      </span>
                     </td>
                   </tr>
                 );

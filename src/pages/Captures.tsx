@@ -34,6 +34,11 @@ export default function Captures() {
       {captures.length === 0 ? (
         <div className="border-border/70 text-muted-foreground rounded-sm border border-dashed px-6 py-14 text-center text-sm">
           No captures yet. Upload a .pcap or run a reference capture from the Overview page.
+          <div className="mt-3">
+            <Button size="sm" onClick={() => navigate("/dashboard")}>
+              Go to Overview
+            </Button>
+          </div>
         </div>
       ) : (
         <FlushPanel label="Capture register" meta={captures.length + " records"} bodyClassName="overflow-x-auto">
