@@ -5,65 +5,25 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
-import React, { StrictMode, useEffect, lazy, Suspense } from "react";
+import React, { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
 
-// Lazy load route components for better code splitting.
-//
-// Chunk-load failures after a redeploy are unrecoverable from inside the stale
-// bundle: the old chunk filename no longer exists on the server, so merely
-// retrying the same import would 404 again forever. The only correct recovery
-// is a full page reload, which fetches the fresh index.html and its new chunk
-// graph. The requested route lives in the URL (BrowserRouter), so the reload
-// lands exactly where the user clicked. A sessionStorage flag allows exactly
-// one automatic reload — a genuine offline failure surfaces in the route
-// error boundary instead of looping.
-const CHUNK_RELOAD_FLAG = "sms:chunk-reload";
-function lazyRetry<T extends React.ComponentType<any>>(
-  factory: () => Promise<{ default: T }>,
-) {
-  return lazy(async () => {
-    try {
-      const mod = await factory();
-      // Success — re-arm the one-shot reload for the *next* redeploy.
-      sessionStorage.removeItem(CHUNK_RELOAD_FLAG);
-      return mod;
-    } catch (firstError) {
-      console.warn("[route] chunk load failed, scheduling recovery reload", firstError);
-      if (!sessionStorage.getItem(CHUNK_RELOAD_FLAG)) {
-        sessionStorage.setItem(CHUNK_RELOAD_FLAG, "1");
-        window.location.reload();
-      }
-      // Only reached when the reload was suppressed (offline, or already
-      // reloaded once) — the route error boundary shows the branded panel.
-      throw firstError;
-    }
-  });
-}
-const Landing = lazyRetry(() => import("./pages/Landing.tsx"));
-const AuthPage = lazyRetry(() => import("./pages/Auth.tsx"));
-const Dashboard = lazyRetry(() => import("./pages/Dashboard.tsx"));
-const Captures = lazyRetry(() => import("./pages/Captures.tsx"));
-const CaptureDetail = lazyRetry(() => import("./pages/CaptureDetail.tsx"));
-const Findings = lazyRetry(() => import("./pages/Findings.tsx"));
-const Reports = lazyRetry(() => import("./pages/Reports.tsx"));
-const TestLab = lazyRetry(() => import("./pages/TestLab.tsx"));
-const NotFound = lazyRetry(() => import("./pages/NotFound.tsx"));
-
-// Simple loading fallback for route transitions — brand voice, amber pulse
-function RouteLoading() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="flex items-center gap-2.5">
-        <span className="bg-primary size-1.5 animate-pulse rounded-full" />
-        <span className="sms-mono text-muted-foreground text-xs tracking-[0.08em] uppercase">
-          Loading workstation
-        </span>
-      </div>
-    </div>
-  );}
+// All route modules are imported statically (no lazy chunks). The preview
+// environment has HMR disabled, so stale bundles previously failed to fetch
+// renamed lazy chunks after a redeploy and navigation hung silently. With
+// static imports every page is already in the bundle: navigation is pure
+// client-side routing and can never fail on a chunk request.
+import Landing from "./pages/Landing.tsx";
+import AuthPage from "./pages/Auth.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
+import Captures from "./pages/Captures.tsx";
+import CaptureDetail from "./pages/CaptureDetail.tsx";
+import Findings from "./pages/Findings.tsx";
+import Reports from "./pages/Reports.tsx";
+import TestLab from "./pages/TestLab.tsx";
+import NotFound from "./pages/NotFound.tsx";
 
 /** Route changes start at the top — long capture pages never land mid-scroll. */
 function ScrollToTop() {
@@ -159,8 +119,8 @@ function RouteSyncer() {
 
 
 /**
- * Per-route error boundary. If a route module fails to load or render, show a
- * branded, recoverable panel instead of a silent hang. Resets automatically
+ * Per-route error boundary: if a page crashes while rendering, show a
+ * branded, recoverable panel instead of a blank screen. Resets automatically
  * when the user navigates elsewhere (path prop changes).
  */
 class RouteErrorBoundary extends React.Component<
@@ -172,7 +132,7 @@ class RouteErrorBoundary extends React.Component<
     return { hasError: true };
   }
   componentDidCatch(err: Error) {
-    console.error("[route] render/load failure:", err);
+    console.error("[route] render failure:", err);
   }
   componentDidUpdate(prev: { path: string }) {
     if (prev.path !== this.props.path && this.state.hasError) {
@@ -184,11 +144,10 @@ class RouteErrorBoundary extends React.Component<
       return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
           <div className="border-border/80 bg-card/40 w-full max-w-sm rounded-sm border p-6 text-center">
-            <p className="text-sm font-semibold">This section failed to load</p>
+            <p className="text-sm font-semibold">This section hit an error</p>
             <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
-              The route module could not be loaded — this can happen right after an
-              update while the preview is still serving an old bundle. Reloading the
-              workstation resolves it.
+              The page failed while rendering. Reloading the workstation usually
+              resolves it.
             </p>
             <Button size="sm" className="mt-4" onClick={() => window.location.reload()}>
               Reload workstation
@@ -206,64 +165,62 @@ function RouteArea() {
   const location = useLocation();
   return (
     <RouteErrorBoundary path={location.pathname}>
-      <Suspense fallback={<RouteLoading />}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route
-            path="/auth"
-            element={<AuthPage redirectAfterAuth="/dashboard" />}
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <RequireAuth>
-                <Dashboard />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/captures"
-            element={
-              <RequireAuth>
-                <Captures />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/captures/:id"
-            element={
-              <RequireAuth>
-                <CaptureDetail />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/findings"
-            element={
-              <RequireAuth>
-                <Findings />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <RequireAuth>
-                <Reports />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/test-lab"
-            element={
-              <RequireAuth>
-                <TestLab />
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route
+          path="/auth"
+          element={<AuthPage redirectAfterAuth="/dashboard" />}
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <Dashboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/captures"
+          element={
+            <RequireAuth>
+              <Captures />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/captures/:id"
+          element={
+            <RequireAuth>
+              <CaptureDetail />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/findings"
+          element={
+            <RequireAuth>
+              <Findings />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <RequireAuth>
+              <Reports />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/test-lab"
+          element={
+            <RequireAuth>
+              <TestLab />
+            </RequireAuth>
+          }
+        />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </RouteErrorBoundary>
   );
 }
