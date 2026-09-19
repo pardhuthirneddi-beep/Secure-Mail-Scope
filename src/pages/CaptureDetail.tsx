@@ -36,6 +36,7 @@ import {
 } from "@/lib/sms-format";
 import { cn } from "@/lib/utils";
 import { ForensicWaves } from "@/components/sms-brand";
+import { FadeContent } from "@/components/reactbits/reactbits";
 import type { Evidence, Finding, Session } from "@/sms/types";
 import type { RiskLevel } from "@/sms/theme";
 import {
@@ -579,9 +580,10 @@ export default function CaptureDetail() {
           </ul>
         </FlushPanel>
 
-        {/* Session detail */}
+        {/* Session detail — subtle fade-rise on every session switch (visual only) */}
         <div className="lg:col-span-3">
           {current ? (
+            <FadeContent key={current.id} duration={0.32}>
             <Panel
               label={current.id}
               meta={sessionTitle(current).split(" · ").slice(1).join(" · ")}
@@ -599,6 +601,7 @@ export default function CaptureDetail() {
                 risk={currentRisk}
               />
             </Panel>
+            </FadeContent>
           ) : (
             <Panel label="Session" meta="none">
               <p className="text-muted-foreground py-10 text-center text-sm">

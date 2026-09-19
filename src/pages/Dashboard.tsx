@@ -12,6 +12,7 @@ import {
   CodeChip,
 } from "@/components/sms-ui";
 import { StepperFlow } from "@/components/sms-stepper";
+import { AnimatedList, SpotlightCard } from "@/components/reactbits/reactbits";
 import { Button } from "@/components/ui/button";
 import { STAGES, runPipeline, resultToReportSeed, DISCLAIMER } from "@/sms/pipeline";
 import { buildDemoPcap, listDemoScenarios } from "@/sms/scenarios";
@@ -104,6 +105,13 @@ const POSTURE_STATUS_CLASS: Record<PostureStatus, string> = {
   WARNING: "text-(--sms-medium) border-(--sms-medium)/40",
   CRITICAL: "text-(--sms-critical) border-(--sms-critical)/40",
   UNAVAILABLE: "text-muted-foreground border-border",
+};
+
+const POSTURE_BAR_CLASS: Record<PostureStatus, string> = {
+  PASS: "bg-(--sms-healthy)/70",
+  WARNING: "bg-(--sms-medium)",
+  CRITICAL: "bg-(--sms-critical)",
+  UNAVAILABLE: "bg-transparent",
 };
 
 /* -------------------------------------------------------------- investigation
@@ -312,7 +320,7 @@ export default function Dashboard() {
         }}
       />
 
-      {/* Forensic status modules */}
+      {/* Forensic status modules — React Bits CountUp animates the real totals */}
       <StatStrip
         items={[
           { label: "Captures", value: String(captures.length), tone: "info" },
@@ -472,29 +480,40 @@ export default function Dashboard() {
               const real = latestReport?.posture.find((p) => p.category === row.category);
               const status = postureStatus(real ? real.score : null);
               return (
-                <div key={row.category} className="flex items-center justify-between gap-3 py-2">
-                  <div className="min-w-0">
+                <div key={row.category} className="py-2.5">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="text-xs font-medium">{row.label}</div>
-                    {real ? (
-                      <div className="sms-mono text-muted-foreground/70 mt-0.5 truncate text-[10px]">
-                        {real.score}% · {real.basisCount} session{real.basisCount === 1 ? "" : "s"}
-                      </div>
-                    ) : (
-                      <div className="sms-mono text-muted-foreground/50 mt-0.5 truncate text-[10px]">
-                        {latestReport
-                          ? "not measurable in this capture"
-                          : "awaiting first analysis"}
-                      </div>
-                    )}
+                    <span
+                      className={cn(
+                        "sms-mono shrink-0 rounded-[2px] border px-1.5 py-px text-[9px] tracking-[0.1em] font-semibold",
+                        POSTURE_STATUS_CLASS[status],
+                      )}
+                    >
+                      {status}
+                    </span>
                   </div>
-                  <span
+                  {/* Meter: only drawn when a real score exists */}
+                  <div className="bg-muted/70 mt-1.5 h-1 w-full overflow-hidden rounded-[1px]">
+                    <div
+                      className={cn(
+                        "h-full transition-[width] duration-500",
+                        POSTURE_BAR_CLASS[status],
+                      )}
+                      style={{ width: real ? real.score + "%" : "0%" }}
+                    />
+                  </div>
+                  <div
                     className={cn(
-                      "sms-mono shrink-0 rounded-[2px] border px-1.5 py-px text-[9px] tracking-[0.1em] font-semibold",
-                      POSTURE_STATUS_CLASS[status],
+                      "sms-mono mt-1 truncate text-[10px]",
+                      real ? "text-muted-foreground/70" : "text-muted-foreground/50",
                     )}
                   >
-                    {status}
-                  </span>
+                    {real
+                      ? real.score + "% · " + real.basisCount + " session" + (real.basisCount === 1 ? "" : "s")
+                      : latestReport
+                        ? "not measurable in this capture"
+                        : "awaiting first analysis"}
+                  </div>
                 </div>
               );
             })}
@@ -508,7 +527,7 @@ export default function Dashboard() {
           {latest ? (
             <div className="flex items-center gap-3">
               <span className="border-border/80 bg-muted/40 text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-[3px] border">
-                <FileText className="size-4.5" />
+                <FileText className="size-4" />
               </span>
               <div className="min-w-0 flex-1">
                 <div className="sms-mono flex items-center gap-2 truncate text-xs font-semibold">
@@ -550,7 +569,7 @@ export default function Dashboard() {
           <WorkflowChain />
         </Panel>
 
-        {/* Recent captures */}
+        {/* Recent captures — React Bits AnimatedList staggered entrance */}
         <FlushPanel
           label="Recent captures"
           meta={captures.length > 0 ? captures.length + " analyzed" : "empty"}
@@ -564,9 +583,11 @@ export default function Dashboard() {
               Upload a PCAP or run a reference capture to begin.
             </p>
           ) : (
-            <ul className="divide-border/70 divide-y">
-              {captures.slice(0, 8).map((c) => (
-                <li key={c._id}>
+            <AnimatedList
+              className="divide-border/70 divide-y"
+              items={captures.slice(0, 8).map((c) => ({
+                key: c._id,
+                node: (
                   <button
                     className="hover:bg-accent/50 group w-full px-3.5 py-2.5 text-left transition-colors"
                     onClick={() => navigate("/captures/" + c._id)}
@@ -598,23 +619,26 @@ export default function Dashboard() {
                       <span>{formatBytes(c.sizeBytes)}</span>
                     </div>
                   </button>
-                </li>
-              ))}
-            </ul>
+                ),
+              }))}
+            />
           )}
         </FlushPanel>
       </div>
 
-      {/* Capability strip — visual explanations of existing behavior */}
-      <div className="border-border/70 bg-card/40 mt-4 grid gap-px overflow-hidden rounded-sm border bg-border/40 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Capability strip — React Bits SpotlightCard hover response */}
+      <div className="mt-4 grid gap-px overflow-hidden rounded-sm border border-border/70 bg-border/40 sm:grid-cols-2 xl:grid-cols-4">
         {FEATURES.map((f) => (
-          <div key={f.title} className="bg-card/60 flex items-start gap-3 px-4 py-3.5">
-            <span className="text-primary/80 mt-0.5 shrink-0">{f.icon}</span>
+          <SpotlightCard
+            key={f.title}
+            className="bg-card/60 flex items-start gap-3 px-4 py-3.5"
+          >
+            <span className="text-primary/80 relative mt-0.5 shrink-0">{f.icon}</span>
             <div className="min-w-0">
               <div className="text-xs font-semibold">{f.title}</div>
               <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">{f.body}</p>
             </div>
-          </div>
+          </SpotlightCard>
         ))}
       </div>
 

@@ -16,6 +16,7 @@ import {
 
 import { useAuth } from "@/hooks/use-auth";
 import { BrandMark, ForensicWaves } from "@/components/sms-brand";
+import { FadeContent } from "@/components/reactbits/reactbits";
 import { Link } from "react-router";
 import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
@@ -117,10 +118,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         tone="soft"
         className="pointer-events-none fixed inset-x-0 bottom-0"
       />
-      {/* Auth Content */}
+      {/* Auth Content — FadeContent (React Bits) entrance, visual only */}
       <div className="flex flex-1 items-center justify-center px-4">
         <div className="flex h-full w-full max-w-sm flex-col items-center justify-center">
-        <Card className="w-full min-w-[350px] border-border/80 bg-card pb-0 shadow-none">
+        <FadeContent duration={0.45} className="w-full min-w-[350px]">
+        <Card className="w-full border-border/80 bg-card pb-0 shadow-none">
           {step === "signIn" ? (
             <>
               <CardHeader className="text-center">
@@ -287,6 +289,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             </p>
           </div>
         </Card>
+        </FadeContent>
         </div>
       </div>
     </div>

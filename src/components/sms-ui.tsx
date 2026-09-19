@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { severityClass, riskClass, riskLabel } from "@/lib/sms-format";
 import { EVIDENCE_STATE_LABEL } from "@/sms/theme";
 import type { Severity, RiskLevel, EvidenceState } from "@/sms/theme";
+import { CountUp } from "@/components/reactbits/reactbits";
 
 /**
  * Presentation primitives for the workstation.
@@ -33,7 +34,8 @@ export function Panel({
   return (
     <section className={cn("border-border/80 bg-card/40 rounded-sm border", className)}>
       <header className="border-border/80 flex min-h-10 items-center justify-between gap-3 border-b px-3.5 py-2">
-        <div className="flex min-w-0 items-baseline gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="bg-primary/70 h-3 w-0.5 shrink-0 rounded-full" aria-hidden />
           <h2 className="sms-label text-foreground">{label}</h2>
           {meta && <span className="sms-mono text-muted-foreground truncate text-[11px]">{meta}</span>}
         </div>
@@ -63,7 +65,8 @@ export function FlushPanel({
   return (
     <section className={cn("border-border/80 bg-card/40 rounded-sm border", className)}>
       <header className="border-border/80 flex min-h-10 items-center justify-between gap-3 border-b px-3.5 py-2">
-        <div className="flex min-w-0 items-baseline gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="bg-primary/70 h-3 w-0.5 shrink-0 rounded-full" aria-hidden />
           <h2 className="sms-label text-foreground">{label}</h2>
           {meta && <span className="sms-mono text-muted-foreground truncate text-[11px]">{meta}</span>}
         </div>
@@ -110,7 +113,7 @@ export function StatStrip({
         <div
           key={s.label}
           className={cn(
-            "px-4 py-3",
+            "relative px-4 py-3",
             i > 0 && "sm:border-l sm:border-(--border)",
             i >= 2 && "border-t sm:border-t-0",
           )}
@@ -122,7 +125,11 @@ export function StatStrip({
               STAT_TONE[s.tone ?? "neutral"],
             )}
           >
-            {s.value}
+            {/^-?\d+$/.test(s.value) ? (
+              <CountUp to={parseInt(s.value, 10)} duration={1.1} className="tabular-nums" />
+            ) : (
+              s.value
+            )}
           </div>
           {s.hint && <div className="text-muted-foreground mt-1.5 text-[11px]">{s.hint}</div>}
         </div>

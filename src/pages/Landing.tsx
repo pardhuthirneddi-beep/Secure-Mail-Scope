@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { BrandMark, BrandWordmark, ForensicWaves, TechCorner } from "@/components/sms-brand";
 import { DecryptedText } from "@/components/DecryptedText";
+import { SpotlightCard, ShinyText } from "@/components/reactbits/reactbits";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "react-router";
 
@@ -195,7 +196,7 @@ export default function Landing() {
             >
               <Button asChild size="lg" className="gap-2">
                 <Link to={isAuthenticated ? "/dashboard" : "/auth"}>
-                  Analyze your first capture
+                  <ShinyText text="Analyze your first capture" speed={4} />
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
@@ -346,16 +347,17 @@ export default function Landing() {
                   key={cap.k}
                   {...fadeUp}
                   transition={{ ...fadeUp.transition, delay: 0.04 * i }}
-                  className="bg-background hover:bg-accent/30 group relative p-5 transition-colors"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="sms-mono text-muted-foreground/70 text-[10px] tracking-[0.14em]">
-                      {cap.k}
-                    </span>
-                    <Lock className="text-muted-foreground/30 group-hover:text-primary size-3.5 transition-colors" />
-                  </div>
-                  <h3 className="mt-3 text-sm leading-snug font-semibold">{cap.title}</h3>
-                  <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{cap.body}</p>
+                  <SpotlightCard className="group relative h-full bg-background p-5 transition-colors hover:bg-accent/30">
+                    <div className="relative flex items-center justify-between">
+                      <span className="sms-mono text-muted-foreground/70 text-[10px] tracking-[0.14em]">
+                        {cap.k}
+                      </span>
+                      <Lock className="text-muted-foreground/30 group-hover:text-primary size-3.5 transition-colors" />
+                    </div>
+                    <h3 className="relative mt-3 text-sm leading-snug font-semibold">{cap.title}</h3>
+                    <p className="text-muted-foreground relative mt-2 text-xs leading-relaxed">{cap.body}</p>
+                  </SpotlightCard>
                 </motion.div>
               ))}
             </div>
