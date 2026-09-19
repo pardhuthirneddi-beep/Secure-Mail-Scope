@@ -1,5 +1,6 @@
 import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
 import { RequireAuth } from "@/components/RequireAuth";
 import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
@@ -9,16 +10,34 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
 
-// Lazy load route components for better code splitting
-const Landing = lazy(() => import("./pages/Landing.tsx"));
-const AuthPage = lazy(() => import("./pages/Auth.tsx"));
-const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
-const Captures = lazy(() => import("./pages/Captures.tsx"));
-const CaptureDetail = lazy(() => import("./pages/CaptureDetail.tsx"));
-const Findings = lazy(() => import("./pages/Findings.tsx"));
-const Reports = lazy(() => import("./pages/Reports.tsx"));
-const TestLab = lazy(() => import("./pages/TestLab.tsx"));
-const NotFound = lazy(() => import("./pages/NotFound.tsx"));// Simple loading fallback for route transitions — brand voice, amber pulse
+// Lazy load route components for better code splitting. Each import is
+// wrapped in a one-shot retry: after a redeploy, a stale page can reference a
+// renamed chunk that 404s once — retrying after the new build settles loads
+// the route instead of leaving navigation stuck on the fallback.
+function lazyRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>,
+) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (firstError) {
+      console.warn("[route] chunk load failed, retrying once", firstError);
+      await new Promise((r) => setTimeout(r, 300));
+      return await factory();
+    }
+  });
+}
+const Landing = lazyRetry(() => import("./pages/Landing.tsx"));
+const AuthPage = lazyRetry(() => import("./pages/Auth.tsx"));
+const Dashboard = lazyRetry(() => import("./pages/Dashboard.tsx"));
+const Captures = lazyRetry(() => import("./pages/Captures.tsx"));
+const CaptureDetail = lazyRetry(() => import("./pages/CaptureDetail.tsx"));
+const Findings = lazyRetry(() => import("./pages/Findings.tsx"));
+const Reports = lazyRetry(() => import("./pages/Reports.tsx"));
+const TestLab = lazyRetry(() => import("./pages/TestLab.tsx"));
+const NotFound = lazyRetry(() => import("./pages/NotFound.tsx"));
+
+// Simple loading fallback for route transitions — brand voice, amber pulse
 function RouteLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -124,6 +143,116 @@ function RouteSyncer() {
 }
 
 
+/**
+ * Per-route error boundary. If a route module fails to load or render, show a
+ * branded, recoverable panel instead of a silent hang. Resets automatically
+ * when the user navigates elsewhere (path prop changes).
+ */
+class RouteErrorBoundary extends React.Component<
+  { path: string; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: Error) {
+    console.error("[route] render/load failure:", err);
+  }
+  componentDidUpdate(prev: { path: string }) {
+    if (prev.path !== this.props.path && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background px-4">
+          <div className="border-border/80 bg-card/40 w-full max-w-sm rounded-sm border p-6 text-center">
+            <p className="text-sm font-semibold">This section failed to load</p>
+            <p className="text-muted-foreground mt-1.5 text-xs leading-relaxed">
+              The route module could not be loaded — this can happen right after an
+              update while the preview is still serving an old bundle. Reloading the
+              workstation resolves it.
+            </p>
+            <Button size="sm" className="mt-4" onClick={() => window.location.reload()}>
+              Reload workstation
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/** Reads the location so the boundary resets on every navigation. */
+function RouteArea() {
+  const location = useLocation();
+  return (
+    <RouteErrorBoundary path={location.pathname}>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route
+            path="/auth"
+            element={<AuthPage redirectAfterAuth="/dashboard" />}
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/captures"
+            element={
+              <RequireAuth>
+                <Captures />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/captures/:id"
+            element={
+              <RequireAuth>
+                <CaptureDetail />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/findings"
+            element={
+              <RequireAuth>
+                <Findings />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <RequireAuth>
+                <Reports />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/test-lab"
+            element={
+              <RequireAuth>
+                <TestLab />
+              </RequireAuth>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </RouteErrorBoundary>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RootErrorBoundary>
@@ -134,64 +263,7 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <RouteSyncer />
           <ScrollToTop />
-          <Suspense fallback={<RouteLoading />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route
-                path="/auth"
-                element={<AuthPage redirectAfterAuth="/dashboard" />}
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <RequireAuth>
-                    <Dashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/captures"
-                element={
-                  <RequireAuth>
-                    <Captures />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/captures/:id"
-                element={
-                  <RequireAuth>
-                    <CaptureDetail />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/findings"
-                element={
-                  <RequireAuth>
-                    <Findings />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/reports"
-                element={
-                  <RequireAuth>
-                    <Reports />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/test-lab"
-                element={
-                  <RequireAuth>
-                    <TestLab />
-                  </RequireAuth>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <RouteArea />
         </BrowserRouter>
         <Toaster />
       </ConvexAuthProvider>
