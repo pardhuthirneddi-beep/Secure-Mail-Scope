@@ -12,7 +12,7 @@ import {
   CodeChip,
 } from "@/components/sms-ui";
 import { StepperFlow } from "@/components/sms-stepper";
-import { AnimatedList, SpotlightCard } from "@/components/reactbits/reactbits";
+import { AnimatedList } from "@/components/reactbits/reactbits";
 import { Button } from "@/components/ui/button";
 import { STAGES, runPipeline, resultToReportSeed, DISCLAIMER } from "@/sms/pipeline";
 import { buildDemoPcap, listDemoScenarios } from "@/sms/scenarios";
@@ -33,8 +33,6 @@ import {
   Mails,
   Network,
   ShieldAlert,
-  ShieldCheck,
-  Cpu,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -145,31 +143,6 @@ function WorkflowChain({ className }: { className?: string }) {
     </ol>
   );
 }
-
-/* ------------------------------------------------------------- feature strip */
-
-const FEATURES = [
-  {
-    title: "Evidence-First",
-    body: "Every important finding traceable to packet evidence.",
-    icon: <ShieldCheck className="size-4" />,
-  },
-  {
-    title: "AI-Assisted",
-    body: "AI used for analysis, anomaly detection and prioritization where applicable.",
-    icon: <Cpu className="size-4" />,
-  },
-  {
-    title: "Multi-Protocol",
-    body: "SMTP / IMAP / POP3.",
-    icon: <Mails className="size-4" />,
-  },
-  {
-    title: "Detailed Reports",
-    body: "Markdown / JSON, evidence-cited.",
-    icon: <FileText className="size-4" />,
-  },
-];
 
 /* ---------------------------------------------------------------------- page */
 
@@ -624,22 +597,6 @@ export default function Dashboard() {
             />
           )}
         </FlushPanel>
-      </div>
-
-      {/* Capability strip — React Bits SpotlightCard hover response */}
-      <div className="mt-4 grid gap-px overflow-hidden rounded-sm border border-border/70 bg-border/40 sm:grid-cols-2 xl:grid-cols-4">
-        {FEATURES.map((f) => (
-          <SpotlightCard
-            key={f.title}
-            className="bg-card/60 flex items-start gap-3 px-4 py-3.5"
-          >
-            <span className="text-primary/80 relative mt-0.5 shrink-0">{f.icon}</span>
-            <div className="min-w-0">
-              <div className="text-xs font-semibold">{f.title}</div>
-              <p className="text-muted-foreground mt-0.5 text-[11px] leading-relaxed">{f.body}</p>
-            </div>
-          </SpotlightCard>
-        ))}
       </div>
 
       <div className="border-border/70 bg-card/40 mt-4 rounded-sm border px-4 py-3">
