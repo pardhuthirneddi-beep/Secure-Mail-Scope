@@ -41,6 +41,7 @@ import {
   calibrateThreshold,
   scoreAnomaly,
   FEATURE_NAMES,
+  type SessionFeatures,
 } from "./ml";
 import type {
   AnalysisReport,
@@ -421,7 +422,7 @@ export async function runPipeline(
         confidence: result.confidence,
         confidenceState:
           result.state === "requires-investigation"
-            ? "requires-investigation"
+            ? "derived"
             : "verified",
         recommendedAction: rule.recommendation,
         status: "open",

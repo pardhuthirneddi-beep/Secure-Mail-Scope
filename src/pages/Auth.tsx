@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/input-otp";
 
 import { useAuth } from "@/hooks/use-auth";
-import logo from "@/assets/logo.svg";
+import { ShieldCheck } from "lucide-react";
+import { Link } from "react-router";
 import { ArrowRight, Loader2, Mail, UserX } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
@@ -120,19 +121,18 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           {step === "signIn" ? (
             <>
               <CardHeader className="text-center">
-              <div className="flex justify-center">
-                    <img
-                      src={logo}
-                      alt="Lock Icon"
-                      width={64}
-                      height={64}
-                      className="rounded-lg mb-4 mt-4 cursor-pointer"
-                      onClick={() => navigate("/")}
-                    />
-                  </div>
-                <CardTitle className="text-xl">Get Started</CardTitle>
+                <div className="mt-4 mb-2 flex justify-center">
+                  <Link
+                    to="/"
+                    className="bg-primary/15 flex size-11 items-center justify-center rounded-sm"
+                  >
+                    <ShieldCheck className="text-primary size-5" />
+                  </Link>
+                </div>
+                <CardTitle className="text-xl tracking-tight">Secure Mail Analysis</CardTitle>
                 <CardDescription>
-                  Enter your email to log in or sign up
+                  Sign in to the workstation to analyze captures and generate evidence-linked
+                  posture reports.
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleEmailSubmit}>
@@ -277,16 +277,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
             </>
           )}
 
-          <div className="py-4 px-6 text-xs text-center text-muted-foreground bg-muted border-t rounded-b-lg">
-            Secured by{" "}
-            <a
-              href="https://freebuff.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-primary transition-colors"
-            >
-              freebuff.com
-            </a>
+          <div className="text-muted-foreground bg-muted border-t rounded-b-lg px-6 py-4 text-center text-xs">
+            Analysis runs entirely in your browser — captures are never uploaded.
           </div>
         </Card>
         </div>

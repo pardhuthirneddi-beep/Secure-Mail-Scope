@@ -34,6 +34,28 @@ const schema = defineSchema(
 
     // add other tables here
 
+    // Stored capture analyses. The heavy analysis payloads (report, sessions,
+    // evidence) are serialized JSON produced by the browser-side pipeline.
+    captures: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      sizeBytes: v.number(),
+      packetCount: v.number(),
+      durationSec: v.number(),
+      sessionCount: v.number(),
+      findingCount: v.number(),
+      highRiskCount: v.number(),
+      criticalCount: v.number(),
+      maxRisk: v.string(), // RiskLevel of the worst session
+      isDemo: v.boolean(),
+      demoScenarioId: v.optional(v.string()),
+      reportJson: v.string(), // AnalysisReport
+      sessionsJson: v.string(), // { sessions: Session[]; evidence: Evidence[] }
+      uploadedAt: v.number(),
+    })
+      .index("by_user", ["userId"])
+      .index("by_user_time", ["userId", "uploadedAt"]),
+
     // tableName: defineTable({
     //   ...
     //   // table fields
