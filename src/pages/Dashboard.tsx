@@ -6,13 +6,12 @@ import { TechCorner } from "@/components/sms-brand";
 import {
   FlushPanel,
   Panel,
-  PipelineFlow,
   RiskDot,
   StageProgress,
   StatStrip,
   CodeChip,
-  type FlowState,
 } from "@/components/sms-ui";
+import { StepperFlow } from "@/components/sms-stepper";
 import { Button } from "@/components/ui/button";
 import { STAGES, runPipeline, resultToReportSeed, DISCLAIMER } from "@/sms/pipeline";
 import { buildDemoPcap, listDemoScenarios } from "@/sms/scenarios";
@@ -71,23 +70,14 @@ const PIPELINE_VIEW = [
   { id: "report", label: "Report Generation", icon: <FileText className="size-4" />, stages: ["findings"] },
 ];
 
-function pipelineStates(run: RunState): Record<string, FlowState> {
-  const states: Record<string, FlowState> = {};
-  const activeId = run.phase === "running" ? STAGES[run.stageIndex]?.id : undefined;
-  const activeIdx = activeId ? STAGES.findIndex((s) => s.id === activeId) : -1;
-  for (const view of PIPELINE_VIEW) {
-    const idxs = view.stages.map((sid) => STAGES.findIndex((s) => s.id === sid));
-    if (activeIdx < 0) {
-      states[view.id] = "pending";
-    } else if (idxs.every((i) => i < activeIdx)) {
-      states[view.id] = "done";
-    } else if (idxs.includes(activeIdx)) {
-      states[view.id] = "active";
-    } else {
-      states[view.id] = "pending";
-    }
-  }
-  return states;
+/**
+ * Visual groups fully completed by the real pipeline — every underlying stage
+ * in the group has reported done. The stepper visual can never run ahead of
+ * this number, and a group is never shown complete while any of its stages
+ * (e.g. "sessions" inside Session Reconstruction) is still in flight.
+ */
+function groupsDone(done: ReadonlySet<string>): number {
+  return PIPELINE_VIEW.filter((g) => g.stages.every((s) => done.has(s))).length;
 }
 
 /* ---------------------------------------------------------- posture helpers */
@@ -182,6 +172,8 @@ export default function Dashboard() {
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [run, setRun] = useState<RunState>({ phase: "idle" });
   const [dragOver, setDragOver] = useState(false);
+  const [runId, setRunId] = useState(0); // bumps on every analysis → stepper replay
+  const [doneIds, setDoneIds] = useState<Set<string>>(new Set()); // raw stages reported done
   const demos = useMemo(() => listDemoScenarios(), []);
 
   const totals = useMemo(() => {
@@ -211,10 +203,18 @@ export default function Dashboard() {
     isDemo: boolean,
     demoId?: string,
   ) => {
+    setRunId((n) => n + 1); // reset + replay the stepper sequence
+    setDoneIds(new Set());
     setRun({ phase: "running", stageIndex: 0, label: STAGES[0].label });
     try {
       const result = await runPipeline(buffer, fileName, ({ stageId, done }) => {
         if (done) {
+          setDoneIds((prev) => {
+            if (prev.has(stageId)) return prev;
+            const next = new Set(prev);
+            next.add(stageId);
+            return next;
+          });
           const idx = STAGES.findIndex((s) => s.id === stageId);
           const next = Math.min(idx + 1, STAGES.length - 1);
           setRun({ phase: "running", stageIndex: next, label: STAGES[next].label });
@@ -244,6 +244,7 @@ export default function Dashboard() {
         reportJson: JSON.stringify(report),
         sessionsJson,
       });
+      setDoneIds(new Set(STAGES.map((s) => s.id))); // every stage measured complete
       setRun({ phase: "idle" });
       toast.success("Analysis complete", {
         description:
@@ -282,7 +283,6 @@ export default function Dashboard() {
   };
 
   const running = run.phase === "running";
-  const flowStates = pipelineStates(run);
 
   return (
     <AppShell
@@ -333,7 +333,13 @@ export default function Dashboard() {
       {/* Analysis pipeline — the connected stage chain */}
       <Panel
         label="Analysis pipeline"
-        meta={running && run.phase === "running" ? run.label : "idle · select a capture to begin"}
+        meta={
+          running
+            ? run.label
+            : run.phase === "error"
+              ? "stopped · see capture intake"
+              : "idle · run a capture to watch the sequence"
+        }
         className="relative mt-4 overflow-hidden"
         actions={
           <span className="sms-mono text-muted-foreground/60 hidden text-[10px] sm:block">
@@ -342,15 +348,19 @@ export default function Dashboard() {
         }
       >
         <TechCorner className="top-0 right-0" />
-        <PipelineFlow
+        <StepperFlow
           className="py-1"
-          stages={PIPELINE_VIEW.map((v) => ({
-            id: v.id,
-            label: v.label,
-            icon: v.icon,
-            state: flowStates[v.id],
-          }))}
+          runId={runId}
+          running={running}
+          error={run.phase === "error"}
+          realDoneCount={groupsDone(doneIds)}
+          stages={PIPELINE_VIEW.map((v) => ({ id: v.id, label: v.label, icon: v.icon }))}
         />
+        <p className="text-muted-foreground/60 mt-2 text-[10px] leading-relaxed">
+          Stages advance one at a time as the pipeline reports them complete; the paced
+          sequencing is a visual walkthrough of the real analysis order. Measured processing
+          time is reported during the run and stored with each capture record.
+        </p>
       </Panel>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-12">
