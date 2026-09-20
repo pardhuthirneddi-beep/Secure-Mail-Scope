@@ -207,7 +207,7 @@ function RouteArea() {
 
 // Freshness marker: if this line is absent from the DevTools console, the
 // preview tab is running a stale bundle — close and reopen the preview.
-console.info("[SecureMailScope] workstation build 2026-09-20 · routes r5");
+console.info("[SecureMailScope] workstation build 2026-09-20 · routes r6");
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

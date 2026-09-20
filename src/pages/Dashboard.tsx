@@ -6,7 +6,6 @@ import { TechCorner } from "@/components/sms-brand";
 import {
   FlushPanel,
   Panel,
-  RiskDot,
   StageProgress,
   StatStrip,
   CodeChip,
@@ -43,6 +42,10 @@ type RunState =
   | { phase: "error"; message: string };
 
 const RISK_ORDER = ["healthy", "low", "medium", "high", "critical"];
+
+/** Session boot time — computed once at module load so the footer status line
+ *  never calls an impure function during render. */
+const BOOT_DATE = new Date();
 
 const RISK_DOT_TONE = {
   healthy: "bg-(--sms-healthy)",
@@ -210,7 +213,7 @@ export default function Dashboard() {
         const lv = result.riskBySession[s.id]?.level ?? "healthy";
         return RISK_ORDER.indexOf(lv) > RISK_ORDER.indexOf(acc) ? lv : acc;
       }, "healthy");
-      const id = await createCapture({
+      await createCapture({
         name: fileName,
         sizeBytes: result.capture.sizeBytes,
         packetCount: result.capture.packetCount,
@@ -609,7 +612,7 @@ export default function Dashboard() {
       </div>
       <div className="sms-mono text-muted-foreground/70 mt-3 flex items-center gap-1.5 text-[10px]">
         <CodeChip>SMS</CodeChip>
-        workstation ready · {formatDate(Date.now())}
+        workstation ready · {formatDate(BOOT_DATE.getTime())}
       </div>
     </AppShell>
   );

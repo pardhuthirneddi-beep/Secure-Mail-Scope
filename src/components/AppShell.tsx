@@ -48,7 +48,10 @@ export function AppShell({
   };
 
   return (
-    <div className="bg-background text-foreground flex min-h-screen">
+    <div
+      data-testid={`page-${title.toLowerCase().replace(/\s+/g, "-")}`}
+      className="bg-background text-foreground flex min-h-screen"
+    >
       <aside className="bg-sidebar border-border/70 hidden w-56 shrink-0 flex-col border-r md:flex">
         <Link
           to="/"
@@ -112,9 +115,11 @@ export function AppShell({
               <LogOut className="size-3.5" />
               Sign out
             </Button>
-            {/* Diagnostic build tag — confirms the tab is running current code. */}
+            {/* Diagnostic build tag + live route: if the route shown here does
+                not match the page content on screen, the tab is running stale
+                code and must be reloaded. */}
             <div className="sms-mono text-muted-foreground/40 mt-2 text-center text-[9px]">
-              build r5
+              build r6 · {location.pathname}
             </div>
           </div>
         </div>
