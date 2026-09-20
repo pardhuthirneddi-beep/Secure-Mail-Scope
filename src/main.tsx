@@ -98,30 +98,6 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 
 
-function RouteSyncer() {
-  const location = useLocation();
-  useEffect(() => {
-    window.parent.postMessage(
-      { type: "iframe-route-change", path: location.pathname },
-      "*",
-    );
-  }, [location.pathname]);
-
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      if (event.data?.type === "navigate") {
-        if (event.data.direction === "back") window.history.back();
-        if (event.data.direction === "forward") window.history.forward();
-      }
-    }
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
-
-  return null;
-}
-
-
 /**
  * Per-route error boundary: if a page crashes while rendering, show a
  * branded, recoverable panel instead of a blank screen. Resets automatically
@@ -231,7 +207,7 @@ function RouteArea() {
 
 // Freshness marker: if this line is absent from the DevTools console, the
 // preview tab is running a stale bundle — close and reopen the preview.
-console.info("[SecureMailScope] workstation build 2026-09-20 · routes r4");
+console.info("[SecureMailScope] workstation build 2026-09-20 · routes r5");
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -241,7 +217,6 @@ createRoot(document.getElementById("root")!).render(
       </ToolbarErrorBoundary>
       <ConvexAuthProvider client={convex}>
         <BrowserRouter>
-          <RouteSyncer />
           <ScrollToTop />
           <RouteArea />
         </BrowserRouter>
