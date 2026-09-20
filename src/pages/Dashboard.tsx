@@ -231,7 +231,9 @@ export default function Dashboard() {
         description:
           result.sessions.length + " sessions · " + result.findings.length + " findings",
       });
-      navigate("/captures/" + id);
+      // Analysis settles on Overview by design: the stored capture is reachable
+      // via the Latest Analysis panel, Recent captures, Captures, Findings and
+      // Reports — never force-navigated away from the workstation home.
     } catch (e) {
       setRun({ phase: "error", message: e instanceof Error ? e.message : String(e) });
     }

@@ -12,10 +12,14 @@ import { Navigate, useLocation } from "react-router";
  * to a placeholder when it is absent.
  */
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { isLoading, isAuthenticated } = useAuth();
+  // Gate ONLY on the auth handshake. The `currentUser` profile subscription is
+  // display-only (the shell falls back to "Analyst") and can stall forever if
+  // the Convex socket idles out in the preview iframe — blocking on it held
+  // every protected route on the loader while the URL had already changed.
+  const { isAuthLoading, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
+  if (isAuthLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />

@@ -8,11 +8,13 @@ export function useAuth() {
   const { signIn, signOut } = useAuthActions();
 
   return {
-    /** True only while the auth handshake is in flight — never blocks on the
-     *  profile subscription, which can stall if the Convex socket idles out. */
+    /** True only while the auth handshake is in flight. */
     isAuthLoading,
-    /** Convenience flag for callers that need a profile before rendering. */
-    isLoading: isAuthLoading || user === undefined,
+    /** Aliased to the handshake flag on purpose: route guards must never block
+     *  on the `currentUser` profile subscription, which can stall forever if
+     *  the Convex socket idles out in the preview iframe. Callers that need
+     *  the profile can check `user` directly. */
+    isLoading: isAuthLoading,
     isAuthenticated,
     user,
     signIn,
