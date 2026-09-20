@@ -112,6 +112,10 @@ export function AppShell({
               <LogOut className="size-3.5" />
               Sign out
             </Button>
+            {/* Diagnostic build tag — confirms the tab is running current code. */}
+            <div className="sms-mono text-muted-foreground/40 mt-2 text-center text-[9px]">
+              build r5
+            </div>
           </div>
         </div>
       </aside>
