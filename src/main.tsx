@@ -1,3 +1,7 @@
+// Must be the first import: installs the performance.measure guard before
+// react-dom is evaluated. See src/perf-guard.ts — prevents the React 19.2 dev
+// component-renders trace from crashing the app on oversized props.
+import "./perf-guard";
 import '@vly-ai/integrations';
 import { Toaster } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
